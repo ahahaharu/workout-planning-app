@@ -1,5 +1,6 @@
 import { StrengthExercise } from "./Exercise/StrengthExercise.js";
 import { User } from "./User/User.js";
+import { Workout } from "./Workout/Workout.js";
 import { WorkoutPlan } from "./WorkoutPlan/WorkoutPlan.js";
 
 export class WorkoutPlannerApp {
@@ -135,15 +136,22 @@ export class WorkoutPlannerApp {
     );
 
     this.workoutPlans.push(workoutPlan);
+    this.currentUser.addWorkoutPlan(workoutPlan);
     console.log("Программа тренировок создана");
   }
 
   deleteWorkoutPlan(workoutPlanId) {
     this.workoutPlans.filter((workoutPlan) => workoutPlan.id !== workoutPlanId);
+    this.currentUser.workoutPlans.filter(
+      (workoutPlan) => workoutPlan.id !== workoutPlanId
+    );
   }
 
   addExerciseToWorkoutPlan(workoutPlanId, exerciseId) {
     const workoutPlan = this.workoutPlans.find(
+      (workoutPlan) => workoutPlan.id === workoutPlanId
+    );
+    const workoutPlanInUser = this.currentUser.workoutPlans.find(
       (workoutPlan) => workoutPlan.id === workoutPlanId
     );
 
@@ -152,6 +160,7 @@ export class WorkoutPlannerApp {
     );
 
     workoutPlan.addExercise(exercise);
+    workoutPlanInUser.addExercise(exercise);
 
     console.log(
       `Упражнение ${exercise.name} добавлено в программу тренировок ${workoutPlan.name}`
@@ -162,7 +171,56 @@ export class WorkoutPlannerApp {
     const workoutPlan = this.workoutPlans.find(
       (workoutPlan) => workoutPlan.id === workoutPlanId
     );
+    const workoutPlanInUser = this.currentUser.workoutPlans.find(
+      (workoutPlan) => workoutPlan.id === workoutPlanId
+    );
 
     workoutPlan.removeExercise(exerciseId);
+    workoutPlanInUser.removeExercise(exerciseId);
+  }
+
+  generateWorkoutId() {
+    if (!this.workouts.length) return 0;
+    return this.workouts.at(-1).id + 1;
+  }
+
+  createWorkout(date = null, plan) {
+    const id = generateWorkoutId();
+
+    const workout = new Workout(id, this.currentUser.id, date, plan);
+
+    this.workouts.push(workout);
+    this.currentUser.workoutsHistory(workout);
+    console.log("Тренировка создана");
+  }
+
+  addExerciseToWorkout(workoutId, exerciseId) {
+    const workout = this.workouts.find((workout) => workout.id === workoutId);
+    const exercise = this.exercises.find(
+      (exercise) => exercise.id === exerciseId
+    );
+
+    workout.addExercise(exercise);
+    console.log(`Упражнение ${exercise.name} добавлено в тренировку`);
+  }
+
+  recordSetInWorkout(workoutId, exerciseId, reps, weight) {
+    const workout = this.workouts.find((workout) => workout.id === workoutId);
+
+    workout.recordSet(exerciseId, reps, weight);
+    console.log(`Записан сет со значениями ${reps} повторений ${weight} кг`);
+  }
+
+  updateSetInWorkout(workoutId, exerciseId, setIndex, reps, weight) {
+    const workout = this.workouts.find((workout) => workout.id === workoutId);
+
+    workout.updateSet(exerciseId, setIndex, reps, weight);
+    console.log(`Сет обновлён со значениями ${reps} подходов ${weight} кг`);
+  }
+
+  getTotalWeightForWorkout(workoutId) {
+    const workout = this.workouts.find((workout) => workout.id === workoutId);
+
+    console.log("Общий вес за тренировку: " + workout.getTotalWeight());
   }
 }

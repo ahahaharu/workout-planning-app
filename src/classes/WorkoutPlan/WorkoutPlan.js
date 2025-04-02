@@ -40,4 +40,6 @@ export class WorkoutPlan {
   removeNote(noteIndex) {
     this.notes.splice(noteIndex, 1);
   }
+
+  
 }
