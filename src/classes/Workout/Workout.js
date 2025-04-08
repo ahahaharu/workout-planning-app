@@ -16,7 +16,8 @@ export class Workout {
               ex.description,
               ex.mediaUrl,
               ex.type,
-              ex.bodyPart
+              ex.bodyPart,
+              ex.sets
             )
         )
       : [];

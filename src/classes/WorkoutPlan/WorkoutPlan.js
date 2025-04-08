@@ -29,6 +29,38 @@ export class WorkoutPlan {
     this.exercises.push(exercise);
   }
 
+  addSetToExercise(exerciseId, reps, weight) {
+    const exercise = this.exercises.find(
+      (exercise) => exercise.id === exerciseId
+    );
+
+    exercise.addSet(reps, weight);
+  }
+
+  removeSetFromExercise(exerciseId, setIndex) {
+    const exercise = this.exercises.find(
+      (exercise) => exercise.id === exerciseId
+    );
+
+    exercise.removeSet(setIndex);
+  }
+
+  updateSetInExercise(exerciseId, setIndex, reps, weight) {
+    const exercise = this.exercises.find(
+      (exercise) => exercise.id === exerciseId
+    );
+
+    exercise.updateSet(setIndex, reps, weight);
+  }
+
+  getSets(exerciseId) {
+    const exercise = this.exercises.find(
+      (exercise) => exercise.id === exerciseId
+    );
+
+    return exercise.getSets();
+  }
+
   removeExercise(exerciseId) {
     this.exercises.filter((exercise) => exercise.id !== exerciseId);
   }
@@ -40,6 +72,4 @@ export class WorkoutPlan {
   removeNote(noteIndex) {
     this.notes.splice(noteIndex, 1);
   }
-
-  
 }

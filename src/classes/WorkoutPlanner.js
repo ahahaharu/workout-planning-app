@@ -3,7 +3,7 @@ import { User } from "./User/User.js";
 import { Workout } from "./Workout/Workout.js";
 import { WorkoutPlan } from "./WorkoutPlan/WorkoutPlan.js";
 
-export class WorkoutPlannerApp {
+export class WorkoutPlanner {
   constructor() {
     this.users = [];
     this.exercises = [];
@@ -96,29 +96,29 @@ export class WorkoutPlannerApp {
     this.exercises.filter((exercise) => exercise.id !== exerciseId);
   }
 
-  addSetToExercise(exerciseId, reps, weight) {
-    const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId
-    );
+  // addSetToExercise(exerciseId, reps, weight) {
+  //   const exercise = this.exercises.find(
+  //     (exercise) => exercise.id === exerciseId
+  //   );
 
-    exercise.addSet(reps, weight);
-  }
+  //   exercise.addSet(reps, weight);
+  // }
 
-  removeSetFromExercise(exerciseId, setIndex) {
-    const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId
-    );
+  // removeSetFromExercise(exerciseId, setIndex) {
+  //   const exercise = this.exercises.find(
+  //     (exercise) => exercise.id === exerciseId
+  //   );
 
-    exercise.removeSet(setIndex);
-  }
+  //   exercise.removeSet(setIndex);
+  // }
 
-  getSets(exerciseId) {
-    const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId
-    );
+  // getSets(exerciseId) {
+  //   const exercise = this.exercises.find(
+  //     (exercise) => exercise.id === exerciseId
+  //   );
 
-    return exercise.getSets();
-  }
+  //   return exercise.getSets();
+  // }
 
   generateWorkoutPlanId() {
     if (!this.workoutPlans.length) return 0;
@@ -151,16 +151,12 @@ export class WorkoutPlannerApp {
     const workoutPlan = this.workoutPlans.find(
       (workoutPlan) => workoutPlan.id === workoutPlanId
     );
-    const workoutPlanInUser = this.currentUser.workoutPlans.find(
-      (workoutPlan) => workoutPlan.id === workoutPlanId
-    );
 
     const exercise = this.exercises.find(
       (exercise) => exercise.id === exerciseId
     );
 
     workoutPlan.addExercise(exercise);
-    workoutPlanInUser.addExercise(exercise);
 
     console.log(
       `Упражнение ${exercise.name} добавлено в программу тренировок ${workoutPlan.name}`
@@ -171,12 +167,28 @@ export class WorkoutPlannerApp {
     const workoutPlan = this.workoutPlans.find(
       (workoutPlan) => workoutPlan.id === workoutPlanId
     );
-    const workoutPlanInUser = this.currentUser.workoutPlans.find(
+
+    workoutPlan.removeExercise(exerciseId);
+  }
+
+  addSetToExerciseInWorkoutPlan(workoutPlanId, exerciseId, reps, weight) {
+    const workoutPlan = this.workoutPlans.find(
       (workoutPlan) => workoutPlan.id === workoutPlanId
     );
 
-    workoutPlan.removeExercise(exerciseId);
-    workoutPlanInUser.removeExercise(exerciseId);
+    const exercise = workoutPlan.exercises.find(
+      (exercise) => exercise.id === exerciseId
+    );
+
+    exercise.addSet(reps, weight);
+  }
+
+  getWorkoutPlanExercises(workoutPlanId) {
+    const workoutPlan = this.workoutPlans.find(
+      (workoutPlan) => workoutPlan.id === workoutPlanId
+    );
+
+    console.log(workoutPlan.exercises);
   }
 
   generateWorkoutId() {
@@ -184,13 +196,16 @@ export class WorkoutPlannerApp {
     return this.workouts.at(-1).id + 1;
   }
 
-  createWorkout(date = null, plan) {
-    const id = generateWorkoutId();
+  createWorkout(date = null, workoutPlanId) {
+    const id = this.generateWorkoutId();
+    const workoutPlan = this.workoutPlans.find(
+      (workoutPlan) => workoutPlan.id === workoutPlanId
+    );
 
-    const workout = new Workout(id, this.currentUser.id, date, plan);
+    const workout = new Workout(id, this.currentUser.id, date, workoutPlan);
 
     this.workouts.push(workout);
-    this.currentUser.workoutsHistory(workout);
+    this.currentUser.addWorkout(workout);
     console.log("Тренировка создана");
   }
 
@@ -223,4 +238,20 @@ export class WorkoutPlannerApp {
 
     console.log("Общий вес за тренировку: " + workout.getTotalWeight());
   }
+
+  showWorkout(workoutId) {
+    const workout = this.workouts.find((workout) => workout.id === workoutId);
+
+    console.log(workout);
+  }
+
+  // addSetToExerciseInWorkout(workoutId, exerciseId, reps, weight) {
+  //   const workout = this.workouts.find((workout) => workout.id === workoutId);
+
+  //   const exercise = workout.exercises.find(
+  //     (exercise) => exercise.id == exerciseId
+  //   );
+
+  //   exercise.addSet;
+  // }
 }
