@@ -97,3 +97,31 @@ app.recordCardioSessionInWorkout(2, 2, 35, 5.2, 320); // 35 минут, 5.2 км
 
 // Get statistics
 app.getCardioProgress(2);
+
+// Create an endurance exercise
+app.createEnduranceExercise(
+  "Планка",
+  null,
+  "Классическая планка",
+  null,
+  "Core"
+);
+
+// Create a workout plan and add an endurance exercise
+app.createWorkoutPlan("Тренировка на выносливость", "Тренировка кора");
+
+app.addExerciseToWorkoutPlan(2, 3); // Add endurance exercise with ID 3 to plan with ID 1
+
+// Add an endurance session to the workout plan
+app.addEnduranceSessionToExerciseInWorkoutPlan(2, 3, 60, 7); // 60 секунд, сложность 7/10
+// Create a workout based on the plan
+app.createWorkout(null, 2);
+
+// Record an endurance session in the workout
+app.recordEnduranceSessionInWorkout(3, 3, 75, 8); // 75 секунд, сложность 8/10
+
+// Get statistics
+app.getTotalEnduranceDurationForWorkout(3);
+app.getMaxEnduranceDurationForWorkout(3);
+app.getEnduranceTotalIntensityForWorkout(3);
+app.getEnduranceProgress(3);

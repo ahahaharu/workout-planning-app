@@ -175,6 +175,39 @@ export class Statistics {
         totalCaloriesProgress,
         progress: progress,
       };
+    } // Add this condition to getExerciseProgress method
+    else if (exerciseType === "Endurance") {
+      exercises.forEach((item) => {
+        progress.push({
+          date: item.date,
+          totalDuration: item.exercise.getTotalDuration(),
+          maxDuration: item.exercise.getMaxDuration(),
+          averageDifficulty: item.exercise.getAverageDifficulty(),
+          totalIntensity: item.exercise.getTotalIntensity(),
+          averageIntensity: item.exercise.getAverageIntensity(),
+        });
+      });
+
+      const totalDurationProgress =
+        exercises[exercises.length - 1].exercise.getTotalDuration() -
+        exercises[0].exercise.getTotalDuration();
+      const maxDurationProgress =
+        exercises[exercises.length - 1].exercise.getMaxDuration() -
+        exercises[0].exercise.getMaxDuration();
+      const averageDifficultyProgress =
+        exercises[exercises.length - 1].exercise.getAverageDifficulty() -
+        exercises[0].exercise.getAverageDifficulty();
+      const totalIntensityProgress =
+        exercises[exercises.length - 1].exercise.getTotalIntensity() -
+        exercises[0].exercise.getTotalIntensity();
+
+      return {
+        totalDurationProgress,
+        maxDurationProgress,
+        averageDifficultyProgress,
+        totalIntensityProgress,
+        progress: progress,
+      };
     }
   }
 }

@@ -1,5 +1,6 @@
 import { StrengthExercise } from "../Exercise/StrengthExercise.js";
 import { CardioExercise } from "../Exercise/CardioExercise.js";
+import { EnduranceExercise } from "../Exercise/EnduranceExercise.js";
 
 export class Workout {
   constructor(id, ownerId, date, plan = null) {
@@ -56,6 +57,26 @@ export class Workout {
             }
 
             return newExercise;
+          } else if (ex.type === "Endurance") {
+            // Create a new endurance exercise with empty sessions
+            const newExercise = new EnduranceExercise(
+              ex.id,
+              ex.name,
+              ex.image,
+              ex.description,
+              ex.mediaUrl,
+              ex.type,
+              ex.targetMuscle
+            );
+
+            // Copy each session individually
+            if (ex.sessions && ex.sessions.length) {
+              ex.sessions.forEach((session) => {
+                newExercise.addSession(session.duration, session.difficulty);
+              });
+            }
+
+            return newExercise;
           }
         })
       : [];
@@ -106,6 +127,29 @@ export class Workout {
             session.distance,
             session.caloriesBurned
           );
+        });
+      }
+
+      this.exercises.push(newExercise);
+    } else if (
+      exercise.type === "Endurance" &&
+      exercise instanceof EnduranceExercise
+    ) {
+      // Create a new endurance exercise with empty sessions
+      const newExercise = new EnduranceExercise(
+        exercise.id,
+        exercise.name,
+        exercise.image,
+        exercise.description,
+        exercise.mediaUrl,
+        exercise.type,
+        exercise.targetMuscle
+      );
+
+      // Copy each session individually
+      if (exercise.sessions && exercise.sessions.length) {
+        exercise.sessions.forEach((session) => {
+          newExercise.addSession(session.duration, session.difficulty);
         });
       }
 
@@ -199,6 +243,52 @@ export class Workout {
       }, 0);
   }
 
+  recordEnduranceSession(exerciseId, duration, difficulty = null) {
+    const exercise = this.exercises.find(
+      (ex) => ex.id === exerciseId && ex.type === "Endurance"
+    );
+    if (!exercise) {
+      throw new Error(`Endurance exercise with id ${exerciseId} not found`);
+    }
+    exercise.addSession(duration, difficulty);
+  }
+
+  updateEnduranceSession(exerciseId, sessionIndex, duration, difficulty) {
+    const exercise = this.exercises.find(
+      (ex) => ex.id === exerciseId && ex.type === "Endurance"
+    );
+    if (!exercise || !exercise.sessions[sessionIndex]) {
+      throw new Error(
+        `Endurance exercise with id ${exerciseId} or session at index ${sessionIndex} not found`
+      );
+    }
+    exercise.updateSession(sessionIndex, duration, difficulty);
+  }
+
+  getTotalEnduranceDuration() {
+    return this.exercises
+      .filter((ex) => ex.type === "Endurance")
+      .reduce((total, exercise) => {
+        return total + exercise.getTotalDuration();
+      }, 0);
+  }
+
+  getMaxEnduranceDuration() {
+    const durations = this.exercises
+      .filter((ex) => ex.type === "Endurance")
+      .map((exercise) => exercise.getMaxDuration());
+
+    return durations.length ? Math.max(...durations) : 0;
+  }
+
+  getTotalEnduranceIntensity() {
+    return this.exercises
+      .filter((ex) => ex.type === "Endurance")
+      .reduce((total, exercise) => {
+        return total + exercise.getTotalIntensity();
+      }, 0);
+  }
+
   hasChangesFromPlan() {
     if (!this.plan) return false;
 
@@ -236,6 +326,20 @@ export class Workout {
             return true;
           }
         }
+      } else if (exercise.type === "Endurance") {
+        if (exercise.sessions.length !== planExercise.sessions.length)
+          return true;
+
+        for (let i = 0; i < exercise.sessions.length; i++) {
+          if (
+            exercise.sessions[i].duration !==
+              planExercise.sessions[i].duration ||
+            exercise.sessions[i].difficulty !==
+              planExercise.sessions[i].difficulty
+          ) {
+            return true;
+          }
+        }
       }
     }
 
@@ -268,6 +372,12 @@ export class Workout {
               session.distance,
               session.caloriesBurned
             );
+          }
+        } else if (exercise.type === "Endurance") {
+          planExercise.sessions = [];
+
+          for (const session of exercise.sessions) {
+            planExercise.addSession(session.duration, session.difficulty);
           }
         }
       }

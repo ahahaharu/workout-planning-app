@@ -1,4 +1,5 @@
 import { CardioExercise } from "./Exercise/CardioExercise.js";
+import { EnduranceExercise } from "./Exercise/EnduranceExercise.js";
 import { StrengthExercise } from "./Exercise/StrengthExercise.js";
 import { Statistics } from "./Statistics/Statistics.js";
 import { User } from "./User/User.js";
@@ -397,5 +398,132 @@ export class WorkoutPlanner {
     );
 
     console.log("Прогресс кардио упражнения:", cardioProgress);
+  }
+
+  // Add these methods to the WorkoutPlanner class
+
+  createEnduranceExercise(name, image, description, mediaUrl, targetMuscle) {
+    const id = this.generateExerciseId();
+
+    const newExercise = new EnduranceExercise(
+      id,
+      name,
+      image,
+      description,
+      mediaUrl,
+      "Endurance", // type
+      targetMuscle
+    );
+
+    this.exercises.push(newExercise);
+    console.log(`Упражнение на выносливость ${newExercise.name} добавлено`);
+  }
+
+  addEnduranceSessionToExerciseInWorkoutPlan(
+    workoutPlanId,
+    exerciseId,
+    duration,
+    difficulty = null
+  ) {
+    const workoutPlan = this.workoutPlans.find(
+      (workoutPlan) => workoutPlan.id === workoutPlanId
+    );
+
+    const exercise = workoutPlan.exercises.find(
+      (exercise) => exercise.id === exerciseId && exercise.type === "Endurance"
+    );
+
+    if (exercise) {
+      exercise.addSession(duration, difficulty);
+      console.log(
+        `Сессия выносливости добавлена в упражнение ${exercise.name}`
+      );
+    }
+  }
+
+  recordEnduranceSessionInWorkout(
+    workoutId,
+    exerciseId,
+    duration,
+    difficulty = null
+  ) {
+    const workout = this.workouts.find((workout) => workout.id === workoutId);
+
+    workout.recordEnduranceSession(exerciseId, duration, difficulty);
+    console.log(
+      `Записана сессия выносливости: ${duration} секунд, сложность: ${
+        difficulty || "не указана"
+      }`
+    );
+  }
+
+  updateEnduranceSessionInWorkout(
+    workoutId,
+    exerciseId,
+    sessionIndex,
+    duration,
+    difficulty
+  ) {
+    const workout = this.workouts.find((workout) => workout.id === workoutId);
+
+    workout.updateEnduranceSession(
+      exerciseId,
+      sessionIndex,
+      duration,
+      difficulty
+    );
+    console.log(
+      `Сессия выносливости обновлена: ${duration} секунд, сложность: ${
+        difficulty || "не указана"
+      }`
+    );
+  }
+
+  getTotalEnduranceDurationForWorkout(workoutId) {
+    const workout = this.workouts.find((workout) => workout.id === workoutId);
+
+    console.log(
+      "Общее время упражнений на выносливость за тренировку: " +
+        workout.getTotalEnduranceDuration() +
+        " секунд"
+    );
+  }
+
+  getMaxEnduranceDurationForWorkout(workoutId) {
+    const workout = this.workouts.find((workout) => workout.id === workoutId);
+
+    console.log(
+      "Максимальная продолжительность упражнения на выносливость: " +
+        workout.getMaxEnduranceDuration() +
+        " секунд"
+    );
+  }
+
+  getEnduranceTotalIntensityForWorkout(workoutId) {
+    const workout = this.workouts.find((workout) => workout.id === workoutId);
+
+    console.log(
+      "Общая интенсивность упражнений на выносливость: " +
+        workout.getTotalEnduranceIntensity()
+    );
+  }
+
+  getEnduranceProgress(exerciseId, startDate = null, endDate = null) {
+    const exercise = this.exercises.find(
+      (exercise) => exercise.id === exerciseId && exercise.type === "Endurance"
+    );
+
+    if (!exercise) {
+      console.log("Упражнение на выносливость не найдено");
+      return;
+    }
+
+    const enduranceProgress = this.statistics.getExerciseProgress(
+      exerciseId,
+      startDate,
+      endDate
+    );
+
+    console.log("Прогресс упражнения на выносливость:", enduranceProgress);
   }
 }

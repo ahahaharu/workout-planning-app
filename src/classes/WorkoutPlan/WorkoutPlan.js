@@ -1,5 +1,6 @@
 import { StrengthExercise } from "../Exercise/StrengthExercise.js";
 import { CardioExercise } from "../Exercise/CardioExercise.js";
+import { EnduranceExercise } from "../Exercise/EnduranceExercise.js";
 
 export class WorkoutPlan {
   constructor(id, ownerId, name, description, exercises) {
@@ -37,6 +38,17 @@ export class WorkoutPlan {
         ex.mediaUrl,
         ex.type,
         ex.cardioType
+      );
+      this.exercises.push(exercise);
+    } else if (ex.type === "Endurance") {
+      const exercise = new EnduranceExercise(
+        ex.id,
+        ex.name,
+        ex.image,
+        ex.description,
+        ex.mediaUrl,
+        ex.type,
+        ex.targetMuscle
       );
       this.exercises.push(exercise);
     }
@@ -136,5 +148,40 @@ export class WorkoutPlan {
 
   removeNote(noteIndex) {
     this.notes.splice(noteIndex, 1);
+  }
+
+  addEnduranceSessionToExercise(exerciseId, duration, difficulty = null) {
+    const exercise = this.exercises.find(
+      (exercise) => exercise.id === exerciseId && exercise.type === "Endurance"
+    );
+
+    if (exercise) {
+      exercise.addSession(duration, difficulty);
+    }
+  }
+
+  removeEnduranceSessionFromExercise(exerciseId, sessionIndex) {
+    const exercise = this.exercises.find(
+      (exercise) => exercise.id === exerciseId && exercise.type === "Endurance"
+    );
+
+    if (exercise) {
+      exercise.removeSession(sessionIndex);
+    }
+  }
+
+  updateEnduranceSessionInExercise(
+    exerciseId,
+    sessionIndex,
+    duration,
+    difficulty
+  ) {
+    const exercise = this.exercises.find(
+      (exercise) => exercise.id === exerciseId && exercise.type === "Endurance"
+    );
+
+    if (exercise) {
+      exercise.updateSession(sessionIndex, duration, difficulty);
+    }
   }
 }
