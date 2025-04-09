@@ -1,6 +1,7 @@
 import { StrengthExercise } from "../Exercise/StrengthExercise.js";
 import { CardioExercise } from "../Exercise/CardioExercise.js";
 import { EnduranceExercise } from "../Exercise/EnduranceExercise.js";
+import { ExerciseType } from "../Exercise/Constants/ExerciseType.js";
 
 export class WorkoutPlan {
   constructor(id, ownerId, name, description, exercises) {
@@ -18,7 +19,7 @@ export class WorkoutPlan {
   }
 
   addExercise(ex) {
-    if (ex.type === "Strength") {
+    if (ex.type === ExerciseType.STRENGTH) {
       const exercise = new StrengthExercise(
         ex.id,
         ex.name,
@@ -29,7 +30,7 @@ export class WorkoutPlan {
         ex.bodyPart
       );
       this.exercises.push(exercise);
-    } else if (ex.type === "Cardio") {
+    } else if (ex.type === ExerciseType.CARDIO) {
       const exercise = new CardioExercise(
         ex.id,
         ex.name,
@@ -40,7 +41,7 @@ export class WorkoutPlan {
         ex.cardioType
       );
       this.exercises.push(exercise);
-    } else if (ex.type === "Endurance") {
+    } else if (ex.type === ExerciseType.ENDURANCE) {
       const exercise = new EnduranceExercise(
         ex.id,
         ex.name,
@@ -56,7 +57,8 @@ export class WorkoutPlan {
 
   addSetToExercise(exerciseId, reps, weight) {
     const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId && exercise.type === "Strength"
+      (exercise) =>
+        exercise.id === exerciseId && exercise.type === ExerciseType.STRENGTH
     );
 
     if (exercise) {
@@ -66,7 +68,8 @@ export class WorkoutPlan {
 
   addSessionToExercise(exerciseId, duration, distance, caloriesBurned = null) {
     const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId && exercise.type === "Cardio"
+      (exercise) =>
+        exercise.id === exerciseId && exercise.type === ExerciseType.CARDIO
     );
 
     if (exercise) {
@@ -76,7 +79,8 @@ export class WorkoutPlan {
 
   removeSetFromExercise(exerciseId, setIndex) {
     const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId && exercise.type === "Strength"
+      (exercise) =>
+        exercise.id === exerciseId && exercise.type === ExerciseType.STRENGTH
     );
 
     if (exercise) {
@@ -86,7 +90,8 @@ export class WorkoutPlan {
 
   removeSessionFromExercise(exerciseId, sessionIndex) {
     const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId && exercise.type === "Cardio"
+      (exercise) =>
+        exercise.id === exerciseId && exercise.type === ExerciseType.CARDIO
     );
 
     if (exercise) {
@@ -96,7 +101,8 @@ export class WorkoutPlan {
 
   updateSetInExercise(exerciseId, setIndex, reps, weight) {
     const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId && exercise.type === "Strength"
+      (exercise) =>
+        exercise.id === exerciseId && exercise.type === ExerciseType.STRENGTH
     );
 
     if (exercise) {
@@ -112,7 +118,8 @@ export class WorkoutPlan {
     caloriesBurned
   ) {
     const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId && exercise.type === "Cardio"
+      (exercise) =>
+        exercise.id === exerciseId && exercise.type === ExerciseType.CARDIO
     );
 
     if (exercise) {
@@ -122,7 +129,8 @@ export class WorkoutPlan {
 
   getSets(exerciseId) {
     const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId && exercise.type === "Strength"
+      (exercise) =>
+        exercise.id === exerciseId && exercise.type === ExerciseType.STRENGTH
     );
 
     return exercise ? exercise.getSets() : [];
@@ -130,7 +138,8 @@ export class WorkoutPlan {
 
   getSessions(exerciseId) {
     const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId && exercise.type === "Cardio"
+      (exercise) =>
+        exercise.id === exerciseId && exercise.type === ExerciseType.CARDIO
     );
 
     return exercise ? exercise.getSessions() : [];
@@ -152,7 +161,8 @@ export class WorkoutPlan {
 
   addEnduranceSessionToExercise(exerciseId, duration, difficulty = null) {
     const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId && exercise.type === "Endurance"
+      (exercise) =>
+        exercise.id === exerciseId && exercise.type === ExerciseType.ENDURANCE
     );
 
     if (exercise) {
@@ -162,7 +172,8 @@ export class WorkoutPlan {
 
   removeEnduranceSessionFromExercise(exerciseId, sessionIndex) {
     const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId && exercise.type === "Endurance"
+      (exercise) =>
+        exercise.id === exerciseId && exercise.type === ExerciseType.ENDURANCE
     );
 
     if (exercise) {
@@ -177,7 +188,8 @@ export class WorkoutPlan {
     difficulty
   ) {
     const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId && exercise.type === "Endurance"
+      (exercise) =>
+        exercise.id === exerciseId && exercise.type === ExerciseType.ENDURANCE
     );
 
     if (exercise) {

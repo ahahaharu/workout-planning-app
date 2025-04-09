@@ -1,5 +1,7 @@
 import { CardioExercise } from "./Exercise/CardioExercise.js";
+import { ExerciseType } from "./Exercise/Constants/ExerciseType.js";
 import { EnduranceExercise } from "./Exercise/EnduranceExercise.js";
+import { ExerciseFactory } from "./Exercise/Factory/ExerciseFactory.js";
 import { StrengthExercise } from "./Exercise/StrengthExercise.js";
 import { Statistics } from "./Statistics/Statistics.js";
 import { User } from "./User/User.js";
@@ -79,26 +81,27 @@ export class WorkoutPlanner {
     return this.exercises.at(-1).id + 1;
   }
 
-  createExercise(name, image, description, mediaUrl, type, bodyPart, sets) {
+  createStrengthExercise(name, image, description, mediaUrl, bodyPart, sets) {
     const id = this.generateExerciseId();
-
-    const newExercise = new StrengthExercise(
+    const newExercise = ExerciseFactory.createStrengthExercise(
       id,
       name,
       image,
       description,
       mediaUrl,
-      type,
       bodyPart,
       sets
     );
 
     this.exercises.push(newExercise);
     console.log(`Упражнение ${newExercise.name} добавлено`);
+    return newExercise;
   }
 
   removeExercise(exerciseId) {
-    this.exercises.filter((exercise) => exercise.id !== exerciseId);
+    this.exercises = this.exercises.filter(
+      (exercise) => exercise.id !== exerciseId
+    );
   }
 
   // addSetToExercise(exerciseId, reps, weight) {
@@ -146,7 +149,9 @@ export class WorkoutPlanner {
   }
 
   deleteWorkoutPlan(workoutPlanId) {
-    this.workoutPlans.filter((workoutPlan) => workoutPlan.id !== workoutPlanId);
+    this.workoutPlans = this.workoutPlans.filter(
+      (workoutPlan) => workoutPlan.id !== workoutPlanId
+    );
     this.currentUser.workoutPlans.filter(
       (workoutPlan) => workoutPlan.id !== workoutPlanId
     );
@@ -216,12 +221,21 @@ export class WorkoutPlanner {
 
   addExerciseToWorkout(workoutId, exerciseId) {
     const workout = this.workouts.find((workout) => workout.id === workoutId);
+
+    if (!workout) {
+      throw new Error(`Workout with id ${workoutId} not found`);
+    }
+
     const exercise = this.exercises.find(
       (exercise) => exercise.id === exerciseId
     );
 
+    if (!exercise) {
+      throw new Error(`Exercise with id ${exerciseId} not found`);
+    }
+
     workout.addExercise(exercise);
-    console.log(`Упражнение ${exercise.name} добавлено в тренировку`);
+    console.log(`Exercise ${exercise.name} added to workout`);
   }
 
   recordSetInWorkout(workoutId, exerciseId, reps, weight) {
@@ -290,23 +304,20 @@ export class WorkoutPlanner {
     console.log(exerciseProgress);
   }
 
-  // Add these methods to the WorkoutPlanner class
-
   createCardioExercise(name, image, description, mediaUrl, cardioType) {
     const id = this.generateExerciseId();
-
-    const newExercise = new CardioExercise(
+    const newExercise = ExerciseFactory.createCardioExercise(
       id,
       name,
       image,
       description,
       mediaUrl,
-      "Cardio", // type
       cardioType
     );
 
     this.exercises.push(newExercise);
     console.log(`Кардио упражнение ${newExercise.name} добавлено`);
+    return newExercise;
   }
 
   addSessionToExerciseInWorkoutPlan(
@@ -321,7 +332,8 @@ export class WorkoutPlanner {
     );
 
     const exercise = workoutPlan.exercises.find(
-      (exercise) => exercise.id === exerciseId && exercise.type === "Cardio"
+      (exercise) =>
+        exercise.id === exerciseId && exercise.type === ExerciseType.CARDIO
     );
 
     if (exercise) {
@@ -383,7 +395,8 @@ export class WorkoutPlanner {
 
   getCardioProgress(exerciseId, startDate = null, endDate = null) {
     const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId && exercise.type === "Cardio"
+      (exercise) =>
+        exercise.id === exerciseId && exercise.type === ExerciseType.CARDIO
     );
 
     if (!exercise) {
@@ -400,23 +413,20 @@ export class WorkoutPlanner {
     console.log("Прогресс кардио упражнения:", cardioProgress);
   }
 
-  // Add these methods to the WorkoutPlanner class
-
   createEnduranceExercise(name, image, description, mediaUrl, targetMuscle) {
     const id = this.generateExerciseId();
-
-    const newExercise = new EnduranceExercise(
+    const newExercise = ExerciseFactory.createEnduranceExercise(
       id,
       name,
       image,
       description,
       mediaUrl,
-      "Endurance", // type
       targetMuscle
     );
 
     this.exercises.push(newExercise);
     console.log(`Упражнение на выносливость ${newExercise.name} добавлено`);
+    return newExercise;
   }
 
   addEnduranceSessionToExerciseInWorkoutPlan(
@@ -430,7 +440,8 @@ export class WorkoutPlanner {
     );
 
     const exercise = workoutPlan.exercises.find(
-      (exercise) => exercise.id === exerciseId && exercise.type === "Endurance"
+      (exercise) =>
+        exercise.id === exerciseId && exercise.type === ExerciseType.ENDURANCE
     );
 
     if (exercise) {
@@ -510,7 +521,8 @@ export class WorkoutPlanner {
 
   getEnduranceProgress(exerciseId, startDate = null, endDate = null) {
     const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId && exercise.type === "Endurance"
+      (exercise) =>
+        exercise.id === exerciseId && exercise.type === ExerciseType.ENDURANCE
     );
 
     if (!exercise) {
@@ -525,5 +537,29 @@ export class WorkoutPlanner {
     );
 
     console.log("Прогресс упражнения на выносливость:", enduranceProgress);
+  }
+
+  createGenericExercise(
+    type,
+    name,
+    image,
+    description,
+    mediaUrl,
+    specificParam
+  ) {
+    const id = this.generateExerciseId();
+    const newExercise = ExerciseFactory.createExercise(
+      type,
+      id,
+      name,
+      image,
+      description,
+      mediaUrl,
+      specificParam
+    );
+
+    this.exercises.push(newExercise);
+    console.log(`${type} упражнение ${newExercise.name} добавлено`);
+    return newExercise;
   }
 }

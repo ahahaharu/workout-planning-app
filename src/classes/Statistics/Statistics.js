@@ -1,3 +1,5 @@
+import { ExerciseType } from "../Exercise/Constants/ExerciseType.js";
+
 export class Statistics {
   constructor(user) {
     this.user = user;
@@ -108,10 +110,9 @@ export class Statistics {
       };
     }
 
-    // Check the exercise type and create appropriate progress data
     const exerciseType = exercises[0].exercise.type;
 
-    if (exerciseType === "Strength") {
+    if (exerciseType === ExerciseType.STRENGTH) {
       exercises.forEach((item) => {
         progress.push({
           date: item.date,
@@ -137,7 +138,7 @@ export class Statistics {
         totalWeightProgress,
         progress: progress,
       };
-    } else if (exerciseType === "Cardio") {
+    } else if (exerciseType === ExerciseType.CARDIO) {
       exercises.forEach((item) => {
         progress.push({
           date: item.date,
@@ -175,8 +176,7 @@ export class Statistics {
         totalCaloriesProgress,
         progress: progress,
       };
-    } // Add this condition to getExerciseProgress method
-    else if (exerciseType === "Endurance") {
+    } else if (exerciseType === ExerciseType.ENDURANCE) {
       exercises.forEach((item) => {
         progress.push({
           date: item.date,

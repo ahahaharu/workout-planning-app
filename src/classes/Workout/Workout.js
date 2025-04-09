@@ -1,6 +1,7 @@
 import { StrengthExercise } from "../Exercise/StrengthExercise.js";
 import { CardioExercise } from "../Exercise/CardioExercise.js";
 import { EnduranceExercise } from "../Exercise/EnduranceExercise.js";
+import { ExerciseType } from "../Exercise/Constants/ExerciseType.js";
 
 export class Workout {
   constructor(id, ownerId, date, plan = null) {
@@ -9,11 +10,9 @@ export class Workout {
     this.date = date || new Date();
     this.plan = plan;
 
-    // Создаем глубокую копию упражнений и их данных
     this.exercises = plan
       ? plan.exercises.map((ex) => {
-          if (ex.type === "Strength") {
-            // Создаем новое упражнение с пустыми подходами
+          if (ex.type === ExerciseType.STRENGTH) {
             const newExercise = new StrengthExercise(
               ex.id,
               ex.name,
@@ -22,10 +21,9 @@ export class Workout {
               ex.mediaUrl,
               ex.type,
               ex.bodyPart,
-              [] // Пустой массив подходов
+              []
             );
 
-            // Копируем каждый подход отдельно
             if (ex.sets && ex.sets.length) {
               ex.sets.forEach((set) => {
                 newExercise.addSet(set.reps, set.weight);
@@ -33,8 +31,7 @@ export class Workout {
             }
 
             return newExercise;
-          } else if (ex.type === "Cardio") {
-            // Создаем новое кардио упражнение с пустыми сессиями
+          } else if (ex.type === ExerciseType.CARDIO) {
             const newExercise = new CardioExercise(
               ex.id,
               ex.name,
@@ -45,7 +42,6 @@ export class Workout {
               ex.cardioType
             );
 
-            // Копируем каждую сессию отдельно
             if (ex.sessions && ex.sessions.length) {
               ex.sessions.forEach((session) => {
                 newExercise.addSession(
@@ -57,8 +53,7 @@ export class Workout {
             }
 
             return newExercise;
-          } else if (ex.type === "Endurance") {
-            // Create a new endurance exercise with empty sessions
+          } else if (ex.type === ExerciseType.ENDURANCE) {
             const newExercise = new EnduranceExercise(
               ex.id,
               ex.name,
@@ -69,7 +64,6 @@ export class Workout {
               ex.targetMuscle
             );
 
-            // Copy each session individually
             if (ex.sessions && ex.sessions.length) {
               ex.sessions.forEach((session) => {
                 newExercise.addSession(session.duration, session.difficulty);
@@ -83,8 +77,10 @@ export class Workout {
   }
 
   addExercise(exercise) {
-    if (exercise.type === "Strength" && exercise instanceof StrengthExercise) {
-      // Создаем новое упражнение с пустыми подходами
+    if (
+      exercise.type === ExerciseType.STRENGTH &&
+      exercise instanceof StrengthExercise
+    ) {
       const newExercise = new StrengthExercise(
         exercise.id,
         exercise.name,
@@ -93,22 +89,14 @@ export class Workout {
         exercise.mediaUrl,
         exercise.type,
         exercise.bodyPart,
-        [] // Пустой массив подходов
+        []
       );
-
-      // Копируем каждый подход отдельно
-      if (exercise.sets && exercise.sets.length) {
-        exercise.sets.forEach((set) => {
-          newExercise.addSet(set.reps, set.weight);
-        });
-      }
 
       this.exercises.push(newExercise);
     } else if (
-      exercise.type === "Cardio" &&
+      exercise.type === ExerciseType.CARDIO &&
       exercise instanceof CardioExercise
     ) {
-      // Создаем новое кардио упражнение с пустыми сессиями
       const newExercise = new CardioExercise(
         exercise.id,
         exercise.name,
@@ -119,7 +107,6 @@ export class Workout {
         exercise.cardioType
       );
 
-      // Копируем каждую сессию отдельно
       if (exercise.sessions && exercise.sessions.length) {
         exercise.sessions.forEach((session) => {
           newExercise.addSession(
@@ -132,10 +119,9 @@ export class Workout {
 
       this.exercises.push(newExercise);
     } else if (
-      exercise.type === "Endurance" &&
+      exercise.type === ExerciseType.ENDURANCE &&
       exercise instanceof EnduranceExercise
     ) {
-      // Create a new endurance exercise with empty sessions
       const newExercise = new EnduranceExercise(
         exercise.id,
         exercise.name,
@@ -146,24 +132,15 @@ export class Workout {
         exercise.targetMuscle
       );
 
-      // Copy each session individually
-      if (exercise.sessions && exercise.sessions.length) {
-        exercise.sessions.forEach((session) => {
-          newExercise.addSession(session.duration, session.difficulty);
-        });
-      }
-
       this.exercises.push(newExercise);
     } else {
-      throw new Error(
-        "Exercise must be an instance of StrengthExercise or CardioExercise"
-      );
+      throw new Error("Exercise must be an instance of a valid exercise class");
     }
   }
 
   recordSet(exerciseId, reps, weight) {
     const exercise = this.exercises.find(
-      (ex) => ex.id === exerciseId && ex.type === "Strength"
+      (ex) => ex.id === exerciseId && ex.type === ExerciseType.STRENGTH
     );
     if (!exercise) {
       throw new Error(`Strength exercise with id ${exerciseId} not found`);
@@ -173,7 +150,7 @@ export class Workout {
 
   recordCardioSession(exerciseId, duration, distance, caloriesBurned = null) {
     const exercise = this.exercises.find(
-      (ex) => ex.id === exerciseId && ex.type === "Cardio"
+      (ex) => ex.id === exerciseId && ex.type === ExerciseType.CARDIO
     );
     if (!exercise) {
       throw new Error(`Cardio exercise with id ${exerciseId} not found`);
@@ -183,7 +160,7 @@ export class Workout {
 
   updateSet(exerciseId, setIndex, reps, weight) {
     const exercise = this.exercises.find(
-      (ex) => ex.id === exerciseId && ex.type === "Strength"
+      (ex) => ex.id === exerciseId && ex.type === ExerciseType.STRENGTH
     );
     if (!exercise || !exercise.sets[setIndex]) {
       throw new Error(
@@ -201,7 +178,7 @@ export class Workout {
     caloriesBurned
   ) {
     const exercise = this.exercises.find(
-      (ex) => ex.id === exerciseId && ex.type === "Cardio"
+      (ex) => ex.id === exerciseId && ex.type === ExerciseType.CARDIO
     );
     if (!exercise || !exercise.sessions[sessionIndex]) {
       throw new Error(
@@ -213,7 +190,7 @@ export class Workout {
 
   getTotalWeight() {
     return this.exercises
-      .filter((ex) => ex.type === "Strength")
+      .filter((ex) => ex.type === ExerciseType.STRENGTH)
       .reduce((total, exercise) => {
         return total + exercise.getTotalWeight();
       }, 0);
@@ -221,7 +198,7 @@ export class Workout {
 
   getTotalDistance() {
     return this.exercises
-      .filter((ex) => ex.type === "Cardio")
+      .filter((ex) => ex.type === ExerciseType.CARDIO)
       .reduce((total, exercise) => {
         return total + exercise.getTotalDistance();
       }, 0);
@@ -229,7 +206,7 @@ export class Workout {
 
   getTotalDuration() {
     return this.exercises
-      .filter((ex) => ex.type === "Cardio")
+      .filter((ex) => ex.type === ExerciseType.CARDIO)
       .reduce((total, exercise) => {
         return total + exercise.getTotalDuration();
       }, 0);
@@ -237,7 +214,7 @@ export class Workout {
 
   getTotalCalories() {
     return this.exercises
-      .filter((ex) => ex.type === "Cardio")
+      .filter((ex) => ex.type === ExerciseType.CARDIO)
       .reduce((total, exercise) => {
         return total + exercise.getTotalCalories();
       }, 0);
@@ -245,7 +222,7 @@ export class Workout {
 
   recordEnduranceSession(exerciseId, duration, difficulty = null) {
     const exercise = this.exercises.find(
-      (ex) => ex.id === exerciseId && ex.type === "Endurance"
+      (ex) => ex.id === exerciseId && ex.type === ExerciseType.ENDURANCE
     );
     if (!exercise) {
       throw new Error(`Endurance exercise with id ${exerciseId} not found`);
@@ -255,7 +232,7 @@ export class Workout {
 
   updateEnduranceSession(exerciseId, sessionIndex, duration, difficulty) {
     const exercise = this.exercises.find(
-      (ex) => ex.id === exerciseId && ex.type === "Endurance"
+      (ex) => ex.id === exerciseId && ex.type === ExerciseType.ENDURANCE
     );
     if (!exercise || !exercise.sessions[sessionIndex]) {
       throw new Error(
@@ -267,7 +244,7 @@ export class Workout {
 
   getTotalEnduranceDuration() {
     return this.exercises
-      .filter((ex) => ex.type === "Endurance")
+      .filter((ex) => ex.type === ExerciseType.ENDURANCE)
       .reduce((total, exercise) => {
         return total + exercise.getTotalDuration();
       }, 0);
@@ -275,7 +252,7 @@ export class Workout {
 
   getMaxEnduranceDuration() {
     const durations = this.exercises
-      .filter((ex) => ex.type === "Endurance")
+      .filter((ex) => ex.type === ExerciseType.ENDURANCE)
       .map((exercise) => exercise.getMaxDuration());
 
     return durations.length ? Math.max(...durations) : 0;
@@ -283,7 +260,7 @@ export class Workout {
 
   getTotalEnduranceIntensity() {
     return this.exercises
-      .filter((ex) => ex.type === "Endurance")
+      .filter((ex) => ex.type === ExerciseType.ENDURANCE)
       .reduce((total, exercise) => {
         return total + exercise.getTotalIntensity();
       }, 0);
@@ -299,7 +276,7 @@ export class Workout {
 
       if (!planExercise) return true;
 
-      if (exercise.type === "Strength") {
+      if (exercise.type === ExerciseType.STRENGTH) {
         if (exercise.sets.length !== planExercise.sets.length) return true;
 
         for (let i = 0; i < exercise.sets.length; i++) {
@@ -310,7 +287,7 @@ export class Workout {
             return true;
           }
         }
-      } else if (exercise.type === "Cardio") {
+      } else if (exercise.type === ExerciseType.CARDIO) {
         if (exercise.sessions.length !== planExercise.sessions.length)
           return true;
 
@@ -326,7 +303,7 @@ export class Workout {
             return true;
           }
         }
-      } else if (exercise.type === "Endurance") {
+      } else if (exercise.type === ExerciseType.ENDURANCE) {
         if (exercise.sessions.length !== planExercise.sessions.length)
           return true;
 
@@ -357,13 +334,13 @@ export class Workout {
       );
 
       if (planExercise) {
-        if (exercise.type === "Strength") {
+        if (exercise.type === ExerciseType.STRENGTH) {
           planExercise.sets = [];
 
           for (const set of exercise.sets) {
             planExercise.addSet(set.reps, set.weight);
           }
-        } else if (exercise.type === "Cardio") {
+        } else if (exercise.type === ExerciseType.CARDIO) {
           planExercise.sessions = [];
 
           for (const session of exercise.sessions) {
@@ -373,7 +350,7 @@ export class Workout {
               session.caloriesBurned
             );
           }
-        } else if (exercise.type === "Endurance") {
+        } else if (exercise.type === ExerciseType.ENDURANCE) {
           planExercise.sessions = [];
 
           for (const session of exercise.sessions) {

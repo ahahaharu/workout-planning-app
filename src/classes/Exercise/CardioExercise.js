@@ -4,7 +4,7 @@ import { CardioSession } from "./CardioSession.js";
 export class CardioExercise extends Exercise {
   constructor(id, name, image, description, mediaUrl, type, cardioType) {
     super(id, name, image, description, mediaUrl, type);
-    this.cardioType = cardioType;
+    this.cardioType = cardioType; // "Running", "Cycling", "Swimming"
     this.sessions = [];
   }
 

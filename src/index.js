@@ -3,125 +3,112 @@ import { WorkoutPlanner } from "./classes/WorkoutPlanner.js";
 
 const app = new WorkoutPlanner();
 
-app.userReg("Андрей", "1111", "email@gmail.com", 70, "182");
+app.userReg("Андрей", "1111", "email@gmail.com", 70, "182"); // Регистрация пользователя
 
-app.userLogin("email@gmail.com", "1111");
+app.userLogin("email@gmail.com", "1111"); // Логин пользователя
 
-app.showUsers();
+app.showUsers(); // Показать всех пользователей
 
-app.updateWeight(72);
+app.updateWeight(72); // Обновить вес пользователя
 
-app.updateProfile("Иван");
+app.updateProfile("Иван"); // Обновить профиль пользователя
 
-app.createExercise("Жим блока ногами", null, "", null, "Strength", "Ноги");
-app.createExercise("Жим лёжа", null, "", null, "Strength", "Грудь");
+app.createStrengthExercise(
+  "Жим блока ногами",
+  null,
+  "",
+  null,
+  "Strength",
+  "Ноги"
+); // Создание силового упражнения №1
 
-// console.log(app.getSets(0));
+app.createStrengthExercise("Жим лёжа", null, "", null, "Strength", "Грудь"); // Создание силового упражнения №1
 
-// app.addSetToExercise(0, 3, 12);
+app.createWorkoutPlan("Тренировка #1", "описание"); // Создание плана тренировки №1
 
-// console.log(app.getSets(0));
+app.showWorkoutPlans(); // Показать все планы тренировки
 
-// app.removeSetFromExercise(0, 0);
+app.addExerciseToWorkoutPlan(0, 0); // Добавление силового упражнения №1 в план тренировки №1
 
-// console.log(app.getSets(0));
+app.addSetToExerciseInWorkoutPlan(0, 0, 10, 100); // Добавление сета 1 к силовому упражнению №1 в плане тренировки №1
+app.addSetToExerciseInWorkoutPlan(0, 0, 10, 100); // Добавление сета 2 к силовому упражнению №1 в плане тренировки №1
+app.addSetToExerciseInWorkoutPlan(0, 0, 10, 100); // Добавление сета 3 к силовому упражнению №1 в плане тренировки №1
 
-app.createWorkoutPlan("Тренировка #1", "описание");
+app.showWorkoutPlans(); // Показать все планы тренировок
 
-app.showWorkoutPlans();
+app.getWorkoutPlanExercises(0); // Получить все упражнения в плане тренировки №1
 
-app.addExerciseToWorkoutPlan(0, 0);
+app.createWorkout(null, 0); // Создание тренировки №1 на основе плана тренировки №1
 
-app.addSetToExerciseInWorkoutPlan(0, 0, 10, 100);
-app.addSetToExerciseInWorkoutPlan(0, 0, 10, 100);
-app.addSetToExerciseInWorkoutPlan(0, 0, 10, 100);
+app.addExerciseToWorkout(0, 1); // Добавление силового упражнения №2 в тренировку №1
 
-app.showWorkoutPlans();
+app.recordSetInWorkout(0, 1, 10, 50); // Запись сета 1 к силовому упражнению №2 в тренировке №1
+app.recordSetInWorkout(0, 1, 10, 50); // Запись сета 2 к силовому упражнению №2 в тренировке №1
+app.recordSetInWorkout(0, 1, 10, 50); // Запись сета 3 к силовому упражнению №2 в тренировке №1
 
-app.getWorkoutPlanExercises(0);
+app.getTotalWeightForWorkout(0); // Получить общий вес в тренировке №1
 
-app.createWorkout(null, 0);
+app.updateSetInWorkout(0, 0, 0, 10, 120); // Обновление сета 1 к силовому упражнению №1 в тренировке №1
 
-app.addExerciseToWorkout(0, 1);
+app.showWorkout(0); // Показать тренировку №1
 
-app.recordSetInWorkout(0, 1, 10, 50);
-app.recordSetInWorkout(0, 1, 10, 50);
-app.recordSetInWorkout(0, 1, 10, 50);
-
-app.getTotalWeightForWorkout(0);
-
-app.updateSetInWorkout(0, 0, 0, 10, 120);
-
-app.showWorkout(0);
-
-app.getTotalWeightForWorkout(0);
+app.getTotalWeightForWorkout(0); // Получить общий вес в тренировке №1
 
 if (app.hasChangesFromPlan(0)) {
   app.updatePlanSetsInWorkout(0);
-}
+} // Обновление сетов в тренировке №1 на основе плана тренировки №1
 
-app.createWorkout(null, 0);
+app.createWorkout(null, 0); // Создание тренировки №2 на основе плана тренировки №1
 
-app.addExerciseToWorkout(1, 1);
+app.addExerciseToWorkout(1, 1); // Добавление силового упражнения №1 в тренировку №2
 
-app.recordSetInWorkout(1, 1, 10, 75);
-app.recordSetInWorkout(1, 1, 10, 75);
-app.recordSetInWorkout(1, 1, 10, 75);
+app.recordSetInWorkout(1, 1, 10, 75); // Запись сета 1 к силовому упражнению №1 в тренировке №2
+app.recordSetInWorkout(1, 1, 10, 75); // Запись сета 2 к силовому упражнению №1 в тренировке №2
+app.recordSetInWorkout(1, 1, 10, 75); // Запись сета 3 к силовому упражнению №1 в тренировке №2
 
-app.getTotalWeightForWorkout(0);
-app.getTotalWeightForWorkout(1);
+app.getTotalWeightForWorkout(0); // Получить общий вес в тренировке №1
+app.getTotalWeightForWorkout(1); // Получить общий вес в тренировке №2
 
-app.getUserWeightProgress();
+app.getUserWeightProgress(); // Получить прогресс по весу пользователя
 
-app.getWorkoutProgress();
+app.getWorkoutProgress(); // Получить прогресс по всем тренировкам
 
-app.getExerciseProgress(0);
+app.getExerciseProgress(0); // Получить прогресс по силовому упражнению №1 в тренировке №1
 
-app.getExerciseProgress(1);
+app.getExerciseProgress(1); // Получить прогресс по силовому упражнению №2 в тренировке №1
 
-// Create a cardio exercise
-app.createCardioExercise("Бег", null, "Бег на улице", null, "Running");
+app.createCardioExercise("Бег", null, "Бег на улице", null, "Running"); // Создание кардио упражнения
 
-// Create a workout plan and add a cardio exercise
-app.createWorkoutPlan("Кардио тренировка", "Кардио тренировка на улице");
-app.addExerciseToWorkoutPlan(1, 2); // Add cardio exercise with ID 2 to plan with ID 1
+app.createWorkoutPlan("Кардио тренировка", "Кардио тренировка на улице"); // Создание плана тренировки №2
+app.addExerciseToWorkoutPlan(1, 2); // Добавление кардио упражнения в план тренировки №2
 
-// Add a cardio session to the workout plan
-app.addSessionToExerciseInWorkoutPlan(1, 2, 30, 5); // 30 минут, 5 км
+app.addSessionToExerciseInWorkoutPlan(1, 2, 30, 5); // Добавление кардио сессии к кардио упражнению в плане тренировки №2
 
-// Create a workout based on the plan
-app.createWorkout(null, 1);
+app.createWorkout(null, 1); // Создание тренировки №3 на основе плана тренировки №2
 
-// Record a cardio session in the workout
-app.recordCardioSessionInWorkout(2, 2, 35, 5.2, 320); // 35 минут, 5.2 км, 320 калорий
+app.recordCardioSessionInWorkout(2, 2, 35, 5.2, 320); // Запись кардио сессии к кардио упражнению в тренировке №3
 
-// Get statistics
-app.getCardioProgress(2);
+app.getCardioProgress(2); // Получить прогресс по кардио упражнению в тренировке №3
 
-// Create an endurance exercise
 app.createEnduranceExercise(
   "Планка",
   null,
   "Классическая планка",
   null,
   "Core"
-);
+); // Создание упражнения на выносливость
 
-// Create a workout plan and add an endurance exercise
-app.createWorkoutPlan("Тренировка на выносливость", "Тренировка кора");
+app.createWorkoutPlan("Тренировка на выносливость", "Тренировка кора"); // Создание плана тренировки №3
 
-app.addExerciseToWorkoutPlan(2, 3); // Add endurance exercise with ID 3 to plan with ID 1
+app.addExerciseToWorkoutPlan(2, 3); // Добавление упражнения на выносливость в план тренировки №3
 
-// Add an endurance session to the workout plan
-app.addEnduranceSessionToExerciseInWorkoutPlan(2, 3, 60, 7); // 60 секунд, сложность 7/10
-// Create a workout based on the plan
-app.createWorkout(null, 2);
+app.addEnduranceSessionToExerciseInWorkoutPlan(2, 3, 60, 7); // Добавление сессии к упражнению на выносливость в плане тренировки №3
 
-// Record an endurance session in the workout
-app.recordEnduranceSessionInWorkout(3, 3, 75, 8); // 75 секунд, сложность 8/10
+app.createWorkout(null, 2); // Создание тренировки №4 на основе плана тренировки №3
 
-// Get statistics
-app.getTotalEnduranceDurationForWorkout(3);
-app.getMaxEnduranceDurationForWorkout(3);
-app.getEnduranceTotalIntensityForWorkout(3);
-app.getEnduranceProgress(3);
+app.recordEnduranceSessionInWorkout(3, 3, 75, 8); // Запись сессии к упражнению на выносливость в тренировке №4
+
+app.getTotalEnduranceDurationForWorkout(3); // Получить общую продолжительность выносливости в тренировке №4
+app.getMaxEnduranceDurationForWorkout(3); // Получить максимальную продолжительность выносливости в тренировке №4
+app.getEnduranceTotalIntensityForWorkout(3); // Получить общую интенсивность выносливости в тренировке №4
+app.getEnduranceProgress(3); // Получить прогресс по упражнению на выносливость в тренировке №4
