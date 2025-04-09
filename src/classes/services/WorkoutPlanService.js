@@ -1,10 +1,12 @@
 import { ExerciseType } from "../Exercise/Constants/ExerciseType.js";
 import { WorkoutPlan } from "../WorkoutPlan/WorkoutPlan.js";
+import { ExerciseStrategyFactory } from "../Exercise/Strategies/ExerciseStrategyFactory.js";
 
 export class WorkoutPlanService {
   constructor(exerciseService) {
     this.workoutPlans = [];
     this.exerciseService = exerciseService;
+    this.strategyFactory = new ExerciseStrategyFactory();
   }
 
   generateWorkoutPlanId() {
@@ -53,7 +55,7 @@ export class WorkoutPlanService {
     return workoutPlan;
   }
 
-  addSetToExerciseInWorkoutPlan(workoutPlanId, exerciseId, reps, weight) {
+  addTrackingDataToExercise(workoutPlanId, exerciseId, data) {
     const workoutPlan = this.getWorkoutPlanById(workoutPlanId);
 
     if (!workoutPlan) {
@@ -68,8 +70,20 @@ export class WorkoutPlanService {
       throw new Error(`Упражнение с ID ${exerciseId} не найдено в плане`);
     }
 
-    exercise.addSet(reps, weight);
-    return exercise;
+    try {
+      const strategy = this.strategyFactory.getStrategy(exercise.type);
+      strategy.addTrackingData(exercise, data);
+      return exercise;
+    } catch (error) {
+      throw new Error(`Ошибка добавления данных: ${error.message}`);
+    }
+  }
+
+  addSetToExerciseInWorkoutPlan(workoutPlanId, exerciseId, reps, weight) {
+    return this.addTrackingDataToExercise(workoutPlanId, exerciseId, {
+      reps,
+      weight,
+    });
   }
 
   addSessionToExerciseInWorkoutPlan(
@@ -79,25 +93,11 @@ export class WorkoutPlanService {
     distance,
     caloriesBurned = null
   ) {
-    const workoutPlan = this.getWorkoutPlanById(workoutPlanId);
-
-    if (!workoutPlan) {
-      throw new Error(`План тренировки с ID ${workoutPlanId} не найден`);
-    }
-
-    const exercise = workoutPlan.exercises.find(
-      (exercise) =>
-        exercise.id === exerciseId && exercise.type === ExerciseType.CARDIO
-    );
-
-    if (!exercise) {
-      throw new Error(
-        `Кардио упражнение с ID ${exerciseId} не найдено в плане`
-      );
-    }
-
-    exercise.addSession(duration, distance, caloriesBurned);
-    return exercise;
+    return this.addTrackingDataToExercise(workoutPlanId, exerciseId, {
+      duration,
+      distance,
+      caloriesBurned,
+    });
   }
 
   addEnduranceSessionToExerciseInWorkoutPlan(
@@ -106,6 +106,13 @@ export class WorkoutPlanService {
     duration,
     difficulty = null
   ) {
+    return this.addTrackingDataToExercise(workoutPlanId, exerciseId, {
+      duration,
+      difficulty,
+    });
+  }
+
+  updateTrackingDataInExercise(workoutPlanId, exerciseId, index, data) {
     const workoutPlan = this.getWorkoutPlanById(workoutPlanId);
 
     if (!workoutPlan) {
@@ -113,18 +120,86 @@ export class WorkoutPlanService {
     }
 
     const exercise = workoutPlan.exercises.find(
-      (exercise) =>
-        exercise.id === exerciseId && exercise.type === ExerciseType.ENDURANCE
+      (exercise) => exercise.id === exerciseId
     );
 
     if (!exercise) {
-      throw new Error(
-        `Упражнение на выносливость с ID ${exerciseId} не найдено в плане`
-      );
+      throw new Error(`Упражнение с ID ${exerciseId} не найдено в плане`);
     }
 
-    exercise.addSession(duration, difficulty);
-    return exercise;
+    try {
+      const strategy = this.strategyFactory.getStrategy(exercise.type);
+      strategy.updateTrackingData(exercise, index, data);
+      return exercise;
+    } catch (error) {
+      throw new Error(`Ошибка обновления данных: ${error.message}`);
+    }
+  }
+
+  updateSetInExercise(workoutPlanId, exerciseId, setIndex, reps, weight) {
+    return this.updateTrackingDataInExercise(
+      workoutPlanId,
+      exerciseId,
+      setIndex,
+      { reps, weight }
+    );
+  }
+
+  updateSessionInExercise(
+    workoutPlanId,
+    exerciseId,
+    sessionIndex,
+    duration,
+    distance,
+    caloriesBurned
+  ) {
+    return this.updateTrackingDataInExercise(
+      workoutPlanId,
+      exerciseId,
+      sessionIndex,
+      { duration, distance, caloriesBurned }
+    );
+  }
+
+  updateEnduranceSessionInExercise(
+    workoutPlanId,
+    exerciseId,
+    sessionIndex,
+    duration,
+    difficulty
+  ) {
+    return this.updateTrackingDataInExercise(
+      workoutPlanId,
+      exerciseId,
+      sessionIndex,
+      { duration, difficulty }
+    );
+  }
+
+  removeTrackingDataFromExercise(workoutPlanId, exerciseId, index) {
+    const workoutPlan = this.getWorkoutPlanById(workoutPlanId);
+
+    if (!workoutPlan) {
+      throw new Error(`План тренировки с ID ${workoutPlanId} не найден`);
+    }
+
+    return workoutPlan.removeTrackingData(exerciseId, index);
+  }
+
+  removeSetFromExercise(workoutPlanId, exerciseId, setIndex) {
+    return this.removeTrackingDataFromExercise(
+      workoutPlanId,
+      exerciseId,
+      setIndex
+    );
+  }
+
+  removeSessionFromExercise(workoutPlanId, exerciseId, sessionIndex) {
+    return this.removeTrackingDataFromExercise(
+      workoutPlanId,
+      exerciseId,
+      sessionIndex
+    );
   }
 
   getWorkoutPlanById(workoutPlanId) {
