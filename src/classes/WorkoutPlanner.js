@@ -1,90 +1,87 @@
-import { CardioExercise } from "./Exercise/CardioExercise.js";
+import { UserService } from "./services/UserService.js";
+import { ExerciseService } from "./services/ExerciseService.js";
+import { WorkoutPlanService } from "./services/WorkoutPlanService.js";
+import { WorkoutService } from "./services/WorkoutService.js";
+import { StatisticsService } from "./services/StatisticsService.js";
 import { ExerciseType } from "./Exercise/Constants/ExerciseType.js";
-import { EnduranceExercise } from "./Exercise/EnduranceExercise.js";
-import { ExerciseFactory } from "./Exercise/Factory/ExerciseFactory.js";
-import { StrengthExercise } from "./Exercise/StrengthExercise.js";
-import { Statistics } from "./Statistics/Statistics.js";
-import { User } from "./User/User.js";
-import { Workout } from "./Workout/Workout.js";
-import { WorkoutPlan } from "./WorkoutPlan/WorkoutPlan.js";
 
 export class WorkoutPlanner {
   constructor() {
-    this.users = [];
-    this.exercises = [];
-    this.workoutPlans = [];
-    this.workouts = [];
-    this.currentUser = null;
-    this.statistics = new Statistics();
+    this.userService = new UserService();
+    this.exerciseService = new ExerciseService();
+    this.workoutPlanService = new WorkoutPlanService(this.exerciseService);
+    this.workoutService = new WorkoutService(
+      this.exerciseService,
+      this.workoutPlanService
+    );
+    this.statisticsService = new StatisticsService(
+      this.userService,
+      this.workoutService
+    );
   }
+
+  // =========== Управление Пользователями ===========
 
   showUsers() {
-    console.log(this.users);
-  }
-
-  showExercises() {
-    console.log(this.exercises);
-  }
-
-  showWorkoutPlans() {
-    console.log(this.workoutPlans);
-  }
-
-  showWorkouts() {
-    console.log(this.workouts);
-  }
-
-  generateUserId() {
-    if (!this.users.length) return 1;
-    return this.users.at(-1).id + 1;
+    console.log(this.userService.getAllUsers());
   }
 
   userReg(name, password, email, currentWeight, height) {
-    if (this.users.some((user) => user.email === email)) {
-      throw new Error("Пользователь с таким email уже существует");
+    try {
+      const newUser = this.userService.registerUser(
+        name,
+        password,
+        email,
+        currentWeight,
+        height
+      );
+      console.log(`Пользователь ${newUser.name} зарегестрирован`);
+      return newUser;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
     }
-    const id = this.generateUserId();
-
-    const newUser = new User(id, name, password, email, currentWeight, height);
-
-    this.users.push(newUser);
-    console.log(`Пользователь ${newUser.name} зарегестрирован`);
   }
 
   userLogin(email, password) {
-    const user = this.users.find((user) => user.email === email);
-    if (!user) {
-      throw new Error("Пользователя с таким email не существует");
+    try {
+      const user = this.userService.loginUser(email, password);
+      console.log(`Пользователь ${user.name} вошёл в систему`);
+      return user;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
     }
-
-    if (user.password !== password) {
-      throw new Error("Неверный пароль");
-    }
-
-    this.currentUser = user;
-    this.statistics.setUser(user);
-    console.log(`Пользователь ${user.name} вошёл в систему`);
   }
 
   updateWeight(newWeight) {
-    this.currentUser.updateWeight(newWeight);
-    console.log(`Пользователь обновил вес на ${newWeight} кг`);
+    try {
+      this.userService.updateUserWeight(newWeight);
+      console.log(`Пользователь обновил вес на ${newWeight} кг`);
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
   }
 
   updateProfile(name, password, email, height) {
-    this.currentUser.updateProfile(name, password, email, height);
-    console.log("Пользователь обновил профиль");
+    try {
+      this.userService.updateUserProfile(name, password, email, height);
+      console.log("Пользователь обновил профиль");
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
   }
 
-  generateExerciseId() {
-    if (!this.exercises.length) return 0;
-    return this.exercises.at(-1).id + 1;
+  // =========== Управление упражнениями ===========
+
+  showExercises() {
+    console.log(this.exerciseService.getAllExercises());
   }
 
   createStrengthExercise(name, image, description, mediaUrl, bodyPart, sets) {
-    const id = this.generateExerciseId();
-    const newExercise = ExerciseFactory.createStrengthExercise(
-      id,
+    const newExercise = this.exerciseService.createStrengthExercise(
       name,
       image,
       description,
@@ -92,451 +89,32 @@ export class WorkoutPlanner {
       bodyPart,
       sets
     );
-
-    this.exercises.push(newExercise);
     console.log(`Упражнение ${newExercise.name} добавлено`);
     return newExercise;
   }
 
-  removeExercise(exerciseId) {
-    this.exercises = this.exercises.filter(
-      (exercise) => exercise.id !== exerciseId
-    );
-  }
-
-  // addSetToExercise(exerciseId, reps, weight) {
-  //   const exercise = this.exercises.find(
-  //     (exercise) => exercise.id === exerciseId
-  //   );
-
-  //   exercise.addSet(reps, weight);
-  // }
-
-  // removeSetFromExercise(exerciseId, setIndex) {
-  //   const exercise = this.exercises.find(
-  //     (exercise) => exercise.id === exerciseId
-  //   );
-
-  //   exercise.removeSet(setIndex);
-  // }
-
-  // getSets(exerciseId) {
-  //   const exercise = this.exercises.find(
-  //     (exercise) => exercise.id === exerciseId
-  //   );
-
-  //   return exercise.getSets();
-  // }
-
-  generateWorkoutPlanId() {
-    if (!this.workoutPlans.length) return 0;
-    return this.workoutPlans.at(-1).id + 1;
-  }
-
-  createWorkoutPlan(name, description) {
-    const id = this.generateWorkoutPlanId();
-
-    const workoutPlan = new WorkoutPlan(
-      id,
-      this.currentUser.id,
-      name,
-      description
-    );
-
-    this.workoutPlans.push(workoutPlan);
-    this.currentUser.addWorkoutPlan(workoutPlan);
-    console.log("Программа тренировок создана");
-  }
-
-  deleteWorkoutPlan(workoutPlanId) {
-    this.workoutPlans = this.workoutPlans.filter(
-      (workoutPlan) => workoutPlan.id !== workoutPlanId
-    );
-    this.currentUser.workoutPlans.filter(
-      (workoutPlan) => workoutPlan.id !== workoutPlanId
-    );
-  }
-
-  addExerciseToWorkoutPlan(workoutPlanId, exerciseId) {
-    const workoutPlan = this.workoutPlans.find(
-      (workoutPlan) => workoutPlan.id === workoutPlanId
-    );
-
-    const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId
-    );
-
-    workoutPlan.addExercise(exercise);
-
-    console.log(
-      `Упражнение ${exercise.name} добавлено в программу тренировок ${workoutPlan.name}`
-    );
-  }
-
-  removeExerciseFromWorkoutPlan(workoutPlanId, exerciseId) {
-    const workoutPlan = this.workoutPlans.find(
-      (workoutPlan) => workoutPlan.id === workoutPlanId
-    );
-
-    workoutPlan.removeExercise(exerciseId);
-  }
-
-  addSetToExerciseInWorkoutPlan(workoutPlanId, exerciseId, reps, weight) {
-    const workoutPlan = this.workoutPlans.find(
-      (workoutPlan) => workoutPlan.id === workoutPlanId
-    );
-
-    const exercise = workoutPlan.exercises.find(
-      (exercise) => exercise.id === exerciseId
-    );
-
-    exercise.addSet(reps, weight);
-  }
-
-  getWorkoutPlanExercises(workoutPlanId) {
-    const workoutPlan = this.workoutPlans.find(
-      (workoutPlan) => workoutPlan.id === workoutPlanId
-    );
-
-    console.log(workoutPlan.exercises);
-  }
-
-  generateWorkoutId() {
-    if (!this.workouts.length) return 0;
-    return this.workouts.at(-1).id + 1;
-  }
-
-  createWorkout(date = null, workoutPlanId) {
-    const id = this.generateWorkoutId();
-    const workoutPlan = this.workoutPlans.find(
-      (workoutPlan) => workoutPlan.id === workoutPlanId
-    );
-
-    const workout = new Workout(id, this.currentUser.id, date, workoutPlan);
-
-    this.workouts.push(workout);
-    this.currentUser.addWorkout(workout);
-    console.log("Тренировка создана");
-  }
-
-  addExerciseToWorkout(workoutId, exerciseId) {
-    const workout = this.workouts.find((workout) => workout.id === workoutId);
-
-    if (!workout) {
-      throw new Error(`Workout with id ${workoutId} not found`);
-    }
-
-    const exercise = this.exercises.find(
-      (exercise) => exercise.id === exerciseId
-    );
-
-    if (!exercise) {
-      throw new Error(`Exercise with id ${exerciseId} not found`);
-    }
-
-    workout.addExercise(exercise);
-    console.log(`Exercise ${exercise.name} added to workout`);
-  }
-
-  recordSetInWorkout(workoutId, exerciseId, reps, weight) {
-    const workout = this.workouts.find((workout) => workout.id === workoutId);
-
-    workout.recordSet(exerciseId, reps, weight);
-    console.log(`Записан сет со значениями ${reps} повторений ${weight} кг`);
-  }
-
-  updateSetInWorkout(workoutId, exerciseId, setIndex, reps, weight) {
-    const workout = this.workouts.find((workout) => workout.id === workoutId);
-
-    workout.updateSet(exerciseId, setIndex, reps, weight);
-    console.log(`Сет обновлён со значениями ${reps} подходов ${weight} кг`);
-  }
-
-  getTotalWeightForWorkout(workoutId) {
-    const workout = this.workouts.find((workout) => workout.id === workoutId);
-
-    console.log("Общий вес за тренировку: " + workout.getTotalWeight());
-  }
-
-  showWorkout(workoutId) {
-    const workout = this.workouts.find((workout) => workout.id === workoutId);
-
-    console.log(workout);
-  }
-
-  hasChangesFromPlan(workoutId) {
-    const workout = this.workouts.find((workout) => workout.id === workoutId);
-
-    return workout.hasChangesFromPlan();
-  }
-
-  updatePlanSetsInWorkout(workoutId) {
-    const workout = this.workouts.find((workout) => workout.id === workoutId);
-
-    workout.updatePlanSets();
-  }
-
-  getUserWeightProgress(startDate = null, endDate = null) {
-    const dateWeights = this.statistics.getUserWeightProgress(
-      startDate,
-      endDate
-    );
-
-    console.log(dateWeights);
-  }
-
-  getWorkoutProgress(startDate = null, endDate = null) {
-    const workoutProgress = this.statistics.getWorkoutProgress(
-      startDate,
-      endDate
-    );
-
-    console.log(workoutProgress);
-  }
-
-  getExerciseProgress(exerciseId, startDate = null, endDate = null) {
-    const exerciseProgress = this.statistics.getExerciseProgress(
-      exerciseId,
-      startDate,
-      endDate
-    );
-
-    console.log(exerciseProgress);
-  }
-
   createCardioExercise(name, image, description, mediaUrl, cardioType) {
-    const id = this.generateExerciseId();
-    const newExercise = ExerciseFactory.createCardioExercise(
-      id,
+    const newExercise = this.exerciseService.createCardioExercise(
       name,
       image,
       description,
       mediaUrl,
       cardioType
     );
-
-    this.exercises.push(newExercise);
     console.log(`Кардио упражнение ${newExercise.name} добавлено`);
     return newExercise;
   }
 
-  addSessionToExerciseInWorkoutPlan(
-    workoutPlanId,
-    exerciseId,
-    duration,
-    distance,
-    caloriesBurned = null
-  ) {
-    const workoutPlan = this.workoutPlans.find(
-      (workoutPlan) => workoutPlan.id === workoutPlanId
-    );
-
-    const exercise = workoutPlan.exercises.find(
-      (exercise) =>
-        exercise.id === exerciseId && exercise.type === ExerciseType.CARDIO
-    );
-
-    if (exercise) {
-      exercise.addSession(duration, distance, caloriesBurned);
-      console.log(`Кардио сессия добавлена в упражнение ${exercise.name}`);
-    }
-  }
-
-  recordCardioSessionInWorkout(
-    workoutId,
-    exerciseId,
-    duration,
-    distance,
-    caloriesBurned = null
-  ) {
-    const workout = this.workouts.find((workout) => workout.id === workoutId);
-
-    workout.recordCardioSession(exerciseId, duration, distance, caloriesBurned);
-    console.log(`Записана кардио сессия: ${duration} минут, ${distance} км`);
-  }
-
-  updateCardioSessionInWorkout(
-    workoutId,
-    exerciseId,
-    sessionIndex,
-    duration,
-    distance,
-    caloriesBurned
-  ) {
-    const workout = this.workouts.find((workout) => workout.id === workoutId);
-
-    workout.updateCardioSession(
-      exerciseId,
-      sessionIndex,
-      duration,
-      distance,
-      caloriesBurned
-    );
-    console.log(`Кардио сессия обновлена: ${duration} минут, ${distance} км`);
-  }
-
-  getTotalDistanceForWorkout(workoutId) {
-    const workout = this.workouts.find((workout) => workout.id === workoutId);
-
-    console.log(
-      "Общая дистанция за тренировку: " + workout.getTotalDistance() + " км"
-    );
-  }
-
-  getTotalDurationForWorkout(workoutId) {
-    const workout = this.workouts.find((workout) => workout.id === workoutId);
-
-    console.log(
-      "Общая длительность кардио за тренировку: " +
-        workout.getTotalDuration() +
-        " минут"
-    );
-  }
-
-  getCardioProgress(exerciseId, startDate = null, endDate = null) {
-    const exercise = this.exercises.find(
-      (exercise) =>
-        exercise.id === exerciseId && exercise.type === ExerciseType.CARDIO
-    );
-
-    if (!exercise) {
-      console.log("Кардио упражнение не найдено");
-      return;
-    }
-
-    const cardioProgress = this.statistics.getExerciseProgress(
-      exerciseId,
-      startDate,
-      endDate
-    );
-
-    console.log("Прогресс кардио упражнения:", cardioProgress);
-  }
-
   createEnduranceExercise(name, image, description, mediaUrl, targetMuscle) {
-    const id = this.generateExerciseId();
-    const newExercise = ExerciseFactory.createEnduranceExercise(
-      id,
+    const newExercise = this.exerciseService.createEnduranceExercise(
       name,
       image,
       description,
       mediaUrl,
       targetMuscle
     );
-
-    this.exercises.push(newExercise);
     console.log(`Упражнение на выносливость ${newExercise.name} добавлено`);
     return newExercise;
-  }
-
-  addEnduranceSessionToExerciseInWorkoutPlan(
-    workoutPlanId,
-    exerciseId,
-    duration,
-    difficulty = null
-  ) {
-    const workoutPlan = this.workoutPlans.find(
-      (workoutPlan) => workoutPlan.id === workoutPlanId
-    );
-
-    const exercise = workoutPlan.exercises.find(
-      (exercise) =>
-        exercise.id === exerciseId && exercise.type === ExerciseType.ENDURANCE
-    );
-
-    if (exercise) {
-      exercise.addSession(duration, difficulty);
-      console.log(
-        `Сессия выносливости добавлена в упражнение ${exercise.name}`
-      );
-    }
-  }
-
-  recordEnduranceSessionInWorkout(
-    workoutId,
-    exerciseId,
-    duration,
-    difficulty = null
-  ) {
-    const workout = this.workouts.find((workout) => workout.id === workoutId);
-
-    workout.recordEnduranceSession(exerciseId, duration, difficulty);
-    console.log(
-      `Записана сессия выносливости: ${duration} секунд, сложность: ${
-        difficulty || "не указана"
-      }`
-    );
-  }
-
-  updateEnduranceSessionInWorkout(
-    workoutId,
-    exerciseId,
-    sessionIndex,
-    duration,
-    difficulty
-  ) {
-    const workout = this.workouts.find((workout) => workout.id === workoutId);
-
-    workout.updateEnduranceSession(
-      exerciseId,
-      sessionIndex,
-      duration,
-      difficulty
-    );
-    console.log(
-      `Сессия выносливости обновлена: ${duration} секунд, сложность: ${
-        difficulty || "не указана"
-      }`
-    );
-  }
-
-  getTotalEnduranceDurationForWorkout(workoutId) {
-    const workout = this.workouts.find((workout) => workout.id === workoutId);
-
-    console.log(
-      "Общее время упражнений на выносливость за тренировку: " +
-        workout.getTotalEnduranceDuration() +
-        " секунд"
-    );
-  }
-
-  getMaxEnduranceDurationForWorkout(workoutId) {
-    const workout = this.workouts.find((workout) => workout.id === workoutId);
-
-    console.log(
-      "Максимальная продолжительность упражнения на выносливость: " +
-        workout.getMaxEnduranceDuration() +
-        " секунд"
-    );
-  }
-
-  getEnduranceTotalIntensityForWorkout(workoutId) {
-    const workout = this.workouts.find((workout) => workout.id === workoutId);
-
-    console.log(
-      "Общая интенсивность упражнений на выносливость: " +
-        workout.getTotalEnduranceIntensity()
-    );
-  }
-
-  getEnduranceProgress(exerciseId, startDate = null, endDate = null) {
-    const exercise = this.exercises.find(
-      (exercise) =>
-        exercise.id === exerciseId && exercise.type === ExerciseType.ENDURANCE
-    );
-
-    if (!exercise) {
-      console.log("Упражнение на выносливость не найдено");
-      return;
-    }
-
-    const enduranceProgress = this.statistics.getExerciseProgress(
-      exerciseId,
-      startDate,
-      endDate
-    );
-
-    console.log("Прогресс упражнения на выносливость:", enduranceProgress);
   }
 
   createGenericExercise(
@@ -547,19 +125,528 @@ export class WorkoutPlanner {
     mediaUrl,
     specificParam
   ) {
-    const id = this.generateExerciseId();
-    const newExercise = ExerciseFactory.createExercise(
+    const newExercise = this.exerciseService.createGenericExercise(
       type,
-      id,
       name,
       image,
       description,
       mediaUrl,
       specificParam
     );
-
-    this.exercises.push(newExercise);
     console.log(`${type} упражнение ${newExercise.name} добавлено`);
     return newExercise;
+  }
+
+  removeExercise(exerciseId) {
+    this.exerciseService.removeExercise(exerciseId);
+  }
+
+  // =========== Управление планами тренировок ===========
+
+  showWorkoutPlans() {
+    console.log(this.workoutPlanService.getAllWorkoutPlans());
+  }
+
+  createWorkoutPlan(name, description) {
+    try {
+      const userId = this.userService.getCurrentUser().id;
+      const workoutPlan = this.workoutPlanService.createWorkoutPlan(
+        userId,
+        name,
+        description
+      );
+      console.log("Программа тренировок создана");
+      return workoutPlan;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  deleteWorkoutPlan(workoutPlanId) {
+    try {
+      this.workoutPlanService.deleteWorkoutPlan(workoutPlanId);
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  addExerciseToWorkoutPlan(workoutPlanId, exerciseId) {
+    try {
+      const exercise = this.exerciseService.getExerciseById(exerciseId);
+      const workoutPlan = this.workoutPlanService.addExerciseToWorkoutPlan(
+        workoutPlanId,
+        exerciseId
+      );
+      console.log(
+        `Упражнение ${exercise.name} добавлено в программу тренировок ${workoutPlan.name}`
+      );
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  removeExerciseFromWorkoutPlan(workoutPlanId, exerciseId) {
+    try {
+      return this.workoutPlanService.removeExerciseFromWorkoutPlan(
+        workoutPlanId,
+        exerciseId
+      );
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  addSetToExerciseInWorkoutPlan(workoutPlanId, exerciseId, reps, weight) {
+    try {
+      this.workoutPlanService.addSetToExerciseInWorkoutPlan(
+        workoutPlanId,
+        exerciseId,
+        reps,
+        weight
+      );
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  addSessionToExerciseInWorkoutPlan(
+    workoutPlanId,
+    exerciseId,
+    duration,
+    distance,
+    caloriesBurned = null
+  ) {
+    try {
+      const exercise =
+        this.workoutPlanService.addSessionToExerciseInWorkoutPlan(
+          workoutPlanId,
+          exerciseId,
+          duration,
+          distance,
+          caloriesBurned
+        );
+      console.log(`Кардио сессия добавлена в упражнение ${exercise.name}`);
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  addEnduranceSessionToExerciseInWorkoutPlan(
+    workoutPlanId,
+    exerciseId,
+    duration,
+    difficulty = null
+  ) {
+    try {
+      const exercise =
+        this.workoutPlanService.addEnduranceSessionToExerciseInWorkoutPlan(
+          workoutPlanId,
+          exerciseId,
+          duration,
+          difficulty
+        );
+      console.log(
+        `Сессия выносливости добавлена в упражнение ${exercise.name}`
+      );
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  getWorkoutPlanExercises(workoutPlanId) {
+    try {
+      const workoutPlan =
+        this.workoutPlanService.getWorkoutPlanById(workoutPlanId);
+      console.log(workoutPlan.exercises);
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  // =========== Управление тренировками ===========
+
+  showWorkouts() {
+    console.log(this.workoutService.getAllWorkouts());
+  }
+
+  createWorkout(date = null, workoutPlanId) {
+    try {
+      const userId = this.userService.getCurrentUser().id;
+      const workout = this.workoutService.createWorkout(
+        userId,
+        date,
+        workoutPlanId
+      );
+      console.log("Тренировка создана");
+      return workout;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  addExerciseToWorkout(workoutId, exerciseId) {
+    try {
+      const workout = this.workoutService.addExerciseToWorkout(
+        workoutId,
+        exerciseId
+      );
+      const exercise = this.exerciseService.getExerciseById(exerciseId);
+      console.log(`Exercise ${exercise.name} added to workout`);
+      return workout;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  recordSetInWorkout(workoutId, exerciseId, reps, weight) {
+    try {
+      this.workoutService.recordSetInWorkout(
+        workoutId,
+        exerciseId,
+        reps,
+        weight
+      );
+      console.log(`Записан сет со значениями ${reps} повторений ${weight} кг`);
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  updateSetInWorkout(workoutId, exerciseId, setIndex, reps, weight) {
+    try {
+      this.workoutService.updateSetInWorkout(
+        workoutId,
+        exerciseId,
+        setIndex,
+        reps,
+        weight
+      );
+      console.log(`Сет обновлён со значениями ${reps} подходов ${weight} кг`);
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  recordCardioSessionInWorkout(
+    workoutId,
+    exerciseId,
+    duration,
+    distance,
+    caloriesBurned = null
+  ) {
+    try {
+      this.workoutService.recordCardioSessionInWorkout(
+        workoutId,
+        exerciseId,
+        duration,
+        distance,
+        caloriesBurned
+      );
+      console.log(`Записана кардио сессия: ${duration} минут, ${distance} км`);
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  updateCardioSessionInWorkout(
+    workoutId,
+    exerciseId,
+    sessionIndex,
+    duration,
+    distance,
+    caloriesBurned
+  ) {
+    try {
+      this.workoutService.updateCardioSessionInWorkout(
+        workoutId,
+        exerciseId,
+        sessionIndex,
+        duration,
+        distance,
+        caloriesBurned
+      );
+      console.log(`Кардио сессия обновлена: ${duration} минут, ${distance} км`);
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  recordEnduranceSessionInWorkout(
+    workoutId,
+    exerciseId,
+    duration,
+    difficulty = null
+  ) {
+    try {
+      this.workoutService.recordEnduranceSessionInWorkout(
+        workoutId,
+        exerciseId,
+        duration,
+        difficulty
+      );
+      console.log(
+        `Записана сессия выносливости: ${duration} секунд, сложность: ${
+          difficulty || "не указана"
+        }`
+      );
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  updateEnduranceSessionInWorkout(
+    workoutId,
+    exerciseId,
+    sessionIndex,
+    duration,
+    difficulty
+  ) {
+    try {
+      this.workoutService.updateEnduranceSessionInWorkout(
+        workoutId,
+        exerciseId,
+        sessionIndex,
+        duration,
+        difficulty
+      );
+      console.log(
+        `Сессия выносливости обновлена: ${duration} секунд, сложность: ${
+          difficulty || "не указана"
+        }`
+      );
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  showWorkout(workoutId) {
+    try {
+      const workout = this.workoutService.getWorkoutById(workoutId);
+      console.log(workout);
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  hasChangesFromPlan(workoutId) {
+    try {
+      return this.workoutService.hasChangesFromPlan(workoutId);
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  updatePlanSetsInWorkout(workoutId) {
+    try {
+      return this.workoutService.updatePlanSetsInWorkout(workoutId);
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  // =========== Управление показателями тренировки ===========
+
+  getTotalWeightForWorkout(workoutId) {
+    try {
+      const totalWeight =
+        this.workoutService.getTotalWeightForWorkout(workoutId);
+      console.log("Общий вес за тренировку: " + totalWeight);
+      return totalWeight;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  getTotalDistanceForWorkout(workoutId) {
+    try {
+      const totalDistance =
+        this.workoutService.getTotalDistanceForWorkout(workoutId);
+      console.log("Общая дистанция за тренировку: " + totalDistance + " км");
+      return totalDistance;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  getTotalDurationForWorkout(workoutId) {
+    try {
+      const totalDuration =
+        this.workoutService.getTotalDurationForWorkout(workoutId);
+      console.log(
+        "Общая длительность кардио за тренировку: " + totalDuration + " минут"
+      );
+      return totalDuration;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  getTotalEnduranceDurationForWorkout(workoutId) {
+    try {
+      const totalDuration =
+        this.workoutService.getTotalEnduranceDurationForWorkout(workoutId);
+      console.log(
+        "Общее время упражнений на выносливость за тренировку: " +
+          totalDuration +
+          " секунд"
+      );
+      return totalDuration;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  getMaxEnduranceDurationForWorkout(workoutId) {
+    try {
+      const maxDuration =
+        this.workoutService.getMaxEnduranceDurationForWorkout(workoutId);
+      console.log(
+        "Максимальная продолжительность упражнения на выносливость: " +
+          maxDuration +
+          " секунд"
+      );
+      return maxDuration;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  getEnduranceTotalIntensityForWorkout(workoutId) {
+    try {
+      const totalIntensity =
+        this.workoutService.getEnduranceTotalIntensityForWorkout(workoutId);
+      console.log(
+        "Общая интенсивность упражнений на выносливость: " + totalIntensity
+      );
+      return totalIntensity;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  // =========== Управление статистикой ===========
+
+  getUserWeightProgress(startDate = null, endDate = null) {
+    try {
+      const currentUser = this.userService.getCurrentUser();
+      const dateWeights = this.statisticsService.getUserWeightProgress(
+        currentUser.id,
+        startDate,
+        endDate
+      );
+      console.log(dateWeights);
+      return dateWeights;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  getWorkoutProgress(startDate = null, endDate = null) {
+    try {
+      const currentUser = this.userService.getCurrentUser();
+      const workoutProgress = this.statisticsService.getWorkoutProgress(
+        currentUser.id,
+        startDate,
+        endDate
+      );
+      console.log(workoutProgress);
+      return workoutProgress;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  getExerciseProgress(exerciseId, startDate = null, endDate = null) {
+    try {
+      const currentUser = this.userService.getCurrentUser();
+      const exerciseProgress = this.statisticsService.getExerciseProgress(
+        currentUser.id,
+        exerciseId,
+        startDate,
+        endDate
+      );
+      console.log(exerciseProgress);
+      return exerciseProgress;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  getCardioProgress(exerciseId, startDate = null, endDate = null) {
+    try {
+      const exercise = this.exerciseService.getExerciseById(exerciseId);
+
+      if (!exercise || exercise.type !== ExerciseType.CARDIO) {
+        console.log("Кардио упражнение не найдено");
+        return;
+      }
+
+      const currentUser = this.userService.getCurrentUser();
+      const cardioProgress = this.statisticsService.getExerciseProgress(
+        currentUser.id,
+        exerciseId,
+        startDate,
+        endDate
+      );
+
+      console.log("Прогресс кардио упражнения:", cardioProgress);
+      return cardioProgress;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
+  }
+
+  getEnduranceProgress(exerciseId, startDate = null, endDate = null) {
+    try {
+      const exercise = this.exerciseService.getExerciseById(exerciseId);
+
+      if (!exercise || exercise.type !== ExerciseType.ENDURANCE) {
+        console.log("Упражнение на выносливость не найдено");
+        return;
+      }
+
+      const currentUser = this.userService.getCurrentUser();
+      const enduranceProgress = this.statisticsService.getExerciseProgress(
+        currentUser.id,
+        exerciseId,
+        startDate,
+        endDate
+      );
+
+      console.log("Прогресс упражнения на выносливость:", enduranceProgress);
+      return enduranceProgress;
+    } catch (error) {
+      console.error(error.message);
+      throw error;
+    }
   }
 }
