@@ -1,3 +1,4 @@
+import { CardioExercise } from "./Exercise/CardioExercise.js";
 import { StrengthExercise } from "./Exercise/StrengthExercise.js";
 import { Statistics } from "./Statistics/Statistics.js";
 import { User } from "./User/User.js";
@@ -286,5 +287,115 @@ export class WorkoutPlanner {
     );
 
     console.log(exerciseProgress);
+  }
+
+  // Add these methods to the WorkoutPlanner class
+
+  createCardioExercise(name, image, description, mediaUrl, cardioType) {
+    const id = this.generateExerciseId();
+
+    const newExercise = new CardioExercise(
+      id,
+      name,
+      image,
+      description,
+      mediaUrl,
+      "Cardio", // type
+      cardioType
+    );
+
+    this.exercises.push(newExercise);
+    console.log(`Кардио упражнение ${newExercise.name} добавлено`);
+  }
+
+  addSessionToExerciseInWorkoutPlan(
+    workoutPlanId,
+    exerciseId,
+    duration,
+    distance,
+    caloriesBurned = null
+  ) {
+    const workoutPlan = this.workoutPlans.find(
+      (workoutPlan) => workoutPlan.id === workoutPlanId
+    );
+
+    const exercise = workoutPlan.exercises.find(
+      (exercise) => exercise.id === exerciseId && exercise.type === "Cardio"
+    );
+
+    if (exercise) {
+      exercise.addSession(duration, distance, caloriesBurned);
+      console.log(`Кардио сессия добавлена в упражнение ${exercise.name}`);
+    }
+  }
+
+  recordCardioSessionInWorkout(
+    workoutId,
+    exerciseId,
+    duration,
+    distance,
+    caloriesBurned = null
+  ) {
+    const workout = this.workouts.find((workout) => workout.id === workoutId);
+
+    workout.recordCardioSession(exerciseId, duration, distance, caloriesBurned);
+    console.log(`Записана кардио сессия: ${duration} минут, ${distance} км`);
+  }
+
+  updateCardioSessionInWorkout(
+    workoutId,
+    exerciseId,
+    sessionIndex,
+    duration,
+    distance,
+    caloriesBurned
+  ) {
+    const workout = this.workouts.find((workout) => workout.id === workoutId);
+
+    workout.updateCardioSession(
+      exerciseId,
+      sessionIndex,
+      duration,
+      distance,
+      caloriesBurned
+    );
+    console.log(`Кардио сессия обновлена: ${duration} минут, ${distance} км`);
+  }
+
+  getTotalDistanceForWorkout(workoutId) {
+    const workout = this.workouts.find((workout) => workout.id === workoutId);
+
+    console.log(
+      "Общая дистанция за тренировку: " + workout.getTotalDistance() + " км"
+    );
+  }
+
+  getTotalDurationForWorkout(workoutId) {
+    const workout = this.workouts.find((workout) => workout.id === workoutId);
+
+    console.log(
+      "Общая длительность кардио за тренировку: " +
+        workout.getTotalDuration() +
+        " минут"
+    );
+  }
+
+  getCardioProgress(exerciseId, startDate = null, endDate = null) {
+    const exercise = this.exercises.find(
+      (exercise) => exercise.id === exerciseId && exercise.type === "Cardio"
+    );
+
+    if (!exercise) {
+      console.log("Кардио упражнение не найдено");
+      return;
+    }
+
+    const cardioProgress = this.statistics.getExerciseProgress(
+      exerciseId,
+      startDate,
+      endDate
+    );
+
+    console.log("Прогресс кардио упражнения:", cardioProgress);
   }
 }

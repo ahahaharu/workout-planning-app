@@ -78,3 +78,22 @@ app.getWorkoutProgress();
 app.getExerciseProgress(0);
 
 app.getExerciseProgress(1);
+
+// Create a cardio exercise
+app.createCardioExercise("Бег", null, "Бег на улице", null, "Running");
+
+// Create a workout plan and add a cardio exercise
+app.createWorkoutPlan("Кардио тренировка", "Кардио тренировка на улице");
+app.addExerciseToWorkoutPlan(1, 2); // Add cardio exercise with ID 2 to plan with ID 1
+
+// Add a cardio session to the workout plan
+app.addSessionToExerciseInWorkoutPlan(1, 2, 30, 5); // 30 минут, 5 км
+
+// Create a workout based on the plan
+app.createWorkout(null, 1);
+
+// Record a cardio session in the workout
+app.recordCardioSessionInWorkout(2, 2, 35, 5.2, 320); // 35 минут, 5.2 км, 320 калорий
+
+// Get statistics
+app.getCardioProgress(2);
