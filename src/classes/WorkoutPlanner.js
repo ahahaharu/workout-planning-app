@@ -1,4 +1,5 @@
 import { StrengthExercise } from "./Exercise/StrengthExercise.js";
+import { Statistics } from "./Statistics/Statistics.js";
 import { User } from "./User/User.js";
 import { Workout } from "./Workout/Workout.js";
 import { WorkoutPlan } from "./WorkoutPlan/WorkoutPlan.js";
@@ -10,6 +11,7 @@ export class WorkoutPlanner {
     this.workoutPlans = [];
     this.workouts = [];
     this.currentUser = null;
+    this.statistics = new Statistics();
   }
 
   showUsers() {
@@ -56,6 +58,7 @@ export class WorkoutPlanner {
     }
 
     this.currentUser = user;
+    this.statistics.setUser(user);
     console.log(`Пользователь ${user.name} вошёл в систему`);
   }
 
@@ -245,13 +248,43 @@ export class WorkoutPlanner {
     console.log(workout);
   }
 
-  // addSetToExerciseInWorkout(workoutId, exerciseId, reps, weight) {
-  //   const workout = this.workouts.find((workout) => workout.id === workoutId);
+  hasChangesFromPlan(workoutId) {
+    const workout = this.workouts.find((workout) => workout.id === workoutId);
 
-  //   const exercise = workout.exercises.find(
-  //     (exercise) => exercise.id == exerciseId
-  //   );
+    return workout.hasChangesFromPlan();
+  }
 
-  //   exercise.addSet;
-  // }
+  updatePlanSetsInWorkout(workoutId) {
+    const workout = this.workouts.find((workout) => workout.id === workoutId);
+
+    workout.updatePlanSets();
+  }
+
+  getUserWeightProgress(startDate = null, endDate = null) {
+    const dateWeights = this.statistics.getUserWeightProgress(
+      startDate,
+      endDate
+    );
+
+    console.log(dateWeights);
+  }
+
+  getWorkoutProgress(startDate = null, endDate = null) {
+    const workoutProgress = this.statistics.getWorkoutProgress(
+      startDate,
+      endDate
+    );
+
+    console.log(workoutProgress);
+  }
+
+  getExerciseProgress(exerciseId, startDate = null, endDate = null) {
+    const exerciseProgress = this.statistics.getExerciseProgress(
+      exerciseId,
+      startDate,
+      endDate
+    );
+
+    console.log(exerciseProgress);
+  }
 }

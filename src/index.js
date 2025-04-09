@@ -3,7 +3,7 @@ import { WorkoutPlanner } from "./classes/WorkoutPlanner.js";
 
 const app = new WorkoutPlanner();
 
-app.userReg("Андрей", "1111", "email@gmail.com", "70", "182");
+app.userReg("Андрей", "1111", "email@gmail.com", 70, "182");
 
 app.userLogin("email@gmail.com", "1111");
 
@@ -55,3 +55,26 @@ app.updateSetInWorkout(0, 0, 0, 10, 120);
 app.showWorkout(0);
 
 app.getTotalWeightForWorkout(0);
+
+if (app.hasChangesFromPlan(0)) {
+  app.updatePlanSetsInWorkout(0);
+}
+
+app.createWorkout(null, 0);
+
+app.addExerciseToWorkout(1, 1);
+
+app.recordSetInWorkout(1, 1, 10, 75);
+app.recordSetInWorkout(1, 1, 10, 75);
+app.recordSetInWorkout(1, 1, 10, 75);
+
+app.getTotalWeightForWorkout(0);
+app.getTotalWeightForWorkout(1);
+
+app.getUserWeightProgress();
+
+app.getWorkoutProgress();
+
+app.getExerciseProgress(0);
+
+app.getExerciseProgress(1);

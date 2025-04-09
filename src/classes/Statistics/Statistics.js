@@ -1,5 +1,10 @@
-class Statistics {
+export class Statistics {
   constructor(user) {
+    this.user = user;
+    this.workouts = user?.workoutsHistory;
+  }
+
+  setUser(user) {
     this.user = user;
     this.workouts = user.workoutsHistory;
   }
@@ -82,14 +87,29 @@ class Statistics {
       }
     }
 
-    exercises.forEach((exercise) => {
+    exercises.forEach((item) => {
       progress.push({
-        date: exercise.date,
-        bestOneRepMax: exercise.getBestOneRepMax(),
-        maxWeight: exercise.maxWeight(),
-        totalWeight: exercise.getTotalWeight(),
+        date: item.date,
+        bestOneRepMax: item.exercise.getBestOneRepMax(),
+        maxWeight: item.exercise.getMaxWeight(), // Исправлено: было maxWeight()
+        totalWeight: item.exercise.getTotalWeight(),
       });
     });
-    return progress;
+
+    const bestOneReMaxProgress =
+      exercises[exercises.length - 1].exercise.getBestOneRepMax() -
+      exercises[0].exercise.getBestOneRepMax();
+    const maxWeightProgress =
+      exercises[exercises.length - 1].exercise.getMaxWeight() -
+      exercises[0].exercise.getMaxWeight();
+    const totalWeightProgress =
+      exercises[exercises.length - 1].exercise.getTotalWeight() -
+      exercises[0].exercise.getTotalWeight();
+    return {
+      bestOneReMaxProgress,
+      maxWeightProgress,
+      totalWeightProgress,
+      progress: progress,
+    };
   }
 }
