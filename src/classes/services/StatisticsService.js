@@ -1,9 +1,11 @@
 import { ExerciseType } from "../Exercise/Constants/ExerciseType.js";
+import { ExerciseStrategyFactory } from "../Exercise/Strategies/ExerciseStrategyFactory.js";
 
 export class StatisticsService {
   constructor(userService, workoutService) {
     this.userService = userService;
     this.workoutService = workoutService;
+    this.strategyFactory = new ExerciseStrategyFactory();
   }
 
   getUserWeightProgress(userId, startDate = null, endDate = null) {
@@ -91,7 +93,6 @@ export class StatisticsService {
   getExerciseProgress(userId, exerciseId, startDate = null, endDate = null) {
     const workoutsByDate = this.getWorkoutsByDate(userId, startDate, endDate);
     const exercises = [];
-    const progress = [];
 
     for (const workout of workoutsByDate) {
       const exercise = workout.exercises.find(
@@ -112,129 +113,34 @@ export class StatisticsService {
       };
     }
 
-    const exerciseType = exercises[0].exercise.type;
+    const firstExercise = exercises[0].exercise;
 
-    return this.getExerciseProgressByType(exerciseType, exercises);
-  }
+    try {
+      const strategy = this.strategyFactory.getStrategy(firstExercise.type);
 
-  getExerciseProgressByType(exerciseType, exercises) {
-    if (exerciseType === ExerciseType.STRENGTH) {
-      return this.getStrengthExerciseProgress(exercises);
-    } else if (exerciseType === ExerciseType.CARDIO) {
-      return this.getCardioExerciseProgress(exercises);
-    } else if (exerciseType === ExerciseType.ENDURANCE) {
-      return this.getEnduranceExerciseProgress(exercises);
-    } else {
-      throw new Error(`Unknown exercise type: ${exerciseType}`);
+      const progressData = exercises.map((item) => {
+        return {
+          date: item.date,
+          ...strategy.getStatistics(item.exercise),
+        };
+      });
+
+      const progressMetrics = strategy.calculateProgress(
+        exercises[0].exercise,
+        exercises[exercises.length - 1].exercise
+      );
+
+      return {
+        ...progressMetrics,
+        progress: progressData,
+      };
+    } catch (error) {
+      console.error(`Error calculating progress: ${error.message}`);
+      return {
+        progress: [],
+        message: `Error calculating progress: ${error.message}`,
+      };
     }
-  }
-
-  getStrengthExerciseProgress(exercises) {
-    const progress = [];
-
-    exercises.forEach((item) => {
-      progress.push({
-        date: item.date,
-        bestOneRepMax: item.exercise.getBestOneRepMax(),
-        maxWeight: item.exercise.getMaxWeight(),
-        totalWeight: item.exercise.getTotalWeight(),
-      });
-    });
-
-    const bestOneReMaxProgress =
-      exercises[exercises.length - 1].exercise.getBestOneRepMax() -
-      exercises[0].exercise.getBestOneRepMax();
-    const maxWeightProgress =
-      exercises[exercises.length - 1].exercise.getMaxWeight() -
-      exercises[0].exercise.getMaxWeight();
-    const totalWeightProgress =
-      exercises[exercises.length - 1].exercise.getTotalWeight() -
-      exercises[0].exercise.getTotalWeight();
-
-    return {
-      bestOneReMaxProgress,
-      maxWeightProgress,
-      totalWeightProgress,
-      progress: progress,
-    };
-  }
-
-  getCardioExerciseProgress(exercises) {
-    const progress = [];
-
-    exercises.forEach((item) => {
-      progress.push({
-        date: item.date,
-        totalDistance: item.exercise.getTotalDistance(),
-        totalDuration: item.exercise.getTotalDuration(),
-        bestPace: item.exercise.getBestPace(),
-        averagePace: item.exercise.getAveragePace(),
-        bestSpeed: item.exercise.getBestSpeed(),
-        averageSpeed: item.exercise.getAverageSpeed(),
-        totalCalories: item.exercise.getTotalCalories(),
-      });
-    });
-
-    const totalDistanceProgress =
-      exercises[exercises.length - 1].exercise.getTotalDistance() -
-      exercises[0].exercise.getTotalDistance();
-    const totalDurationProgress =
-      exercises[exercises.length - 1].exercise.getTotalDuration() -
-      exercises[0].exercise.getTotalDuration();
-    const bestPaceProgress =
-      exercises[exercises.length - 1].exercise.getBestPace() -
-      exercises[0].exercise.getBestPace();
-    const bestSpeedProgress =
-      exercises[exercises.length - 1].exercise.getBestSpeed() -
-      exercises[0].exercise.getBestSpeed();
-    const totalCaloriesProgress =
-      exercises[exercises.length - 1].exercise.getTotalCalories() -
-      exercises[0].exercise.getTotalCalories();
-
-    return {
-      totalDistanceProgress,
-      totalDurationProgress,
-      bestPaceProgress,
-      bestSpeedProgress,
-      totalCaloriesProgress,
-      progress: progress,
-    };
-  }
-
-  getEnduranceExerciseProgress(exercises) {
-    const progress = [];
-
-    exercises.forEach((item) => {
-      progress.push({
-        date: item.date,
-        totalDuration: item.exercise.getTotalDuration(),
-        maxDuration: item.exercise.getMaxDuration(),
-        averageDifficulty: item.exercise.getAverageDifficulty(),
-        totalIntensity: item.exercise.getTotalIntensity(),
-        averageIntensity: item.exercise.getAverageIntensity(),
-      });
-    });
-
-    const totalDurationProgress =
-      exercises[exercises.length - 1].exercise.getTotalDuration() -
-      exercises[0].exercise.getTotalDuration();
-    const maxDurationProgress =
-      exercises[exercises.length - 1].exercise.getMaxDuration() -
-      exercises[0].exercise.getMaxDuration();
-    const averageDifficultyProgress =
-      exercises[exercises.length - 1].exercise.getAverageDifficulty() -
-      exercises[0].exercise.getAverageDifficulty();
-    const totalIntensityProgress =
-      exercises[exercises.length - 1].exercise.getTotalIntensity() -
-      exercises[0].exercise.getTotalIntensity();
-
-    return {
-      totalDurationProgress,
-      maxDurationProgress,
-      averageDifficultyProgress,
-      totalIntensityProgress,
-      progress: progress,
-    };
   }
 
   getUserStatisticsSummary(userId, startDate = null, endDate = null) {
