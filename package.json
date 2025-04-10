@@ -1,0 +1,12 @@
+{
+  "name": "traning-planning-app",
+  "version": "1.0.0",
+  "description": "![Курсовая](https://github.com/user-attachments/assets/b971ba93-868f-4d46-966e-98f901c2f1fa)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "module",
+  "author": "",
+  "license": "ISC"
+}
