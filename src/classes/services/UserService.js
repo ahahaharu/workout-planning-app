@@ -1,9 +1,41 @@
 import { User } from "../User/User.js";
 
 export class UserService {
-  constructor() {
-    this.users = [];
+  constructor(storageManager) {
+    this.storageManager = storageManager;
+    this.users = this.storageManager.getUsers() || [];
     this.currentUser = null;
+    
+    // Десериализация объектов User из localStorage
+    this._deserializeUsers();
+  }
+
+  _deserializeUsers() {
+    // Преобразуем простые объекты из localStorage в экземпляры класса User
+    this.users = this.users.map(userData => {
+      const user = new User(
+        userData.id,
+        userData.name,
+        userData.password,
+        userData.email,
+        userData.currentWeight,
+        userData.height
+      );
+      
+      // Восстанавливаем историю веса
+      if (userData.weightHistory && userData.weightHistory.length) {
+        user.weightHistory = userData.weightHistory.map(entry => ({
+          date: new Date(entry.date),
+          weight: entry.weight
+        }));
+      }
+      
+      return user;
+    });
+  }
+
+  _saveUsers() {
+    this.storageManager.saveUsers(this.users);
   }
 
   getUserById(id) {
@@ -16,7 +48,7 @@ export class UserService {
 
   generateUserId() {
     if (!this.users.length) return 1;
-    return this.users.at(-1).id + 1;
+    return Math.max(...this.users.map(user => user.id)) + 1;
   }
 
   registerUser(name, password, email, currentWeight, height) {
@@ -26,6 +58,7 @@ export class UserService {
     const id = this.generateUserId();
     const newUser = new User(id, name, password, email, currentWeight, height);
     this.users.push(newUser);
+    this._saveUsers();
     return newUser;
   }
 
@@ -46,11 +79,13 @@ export class UserService {
   updateUserWeight(newWeight) {
     this.validateCurrentUser();
     this.currentUser.updateWeight(newWeight);
+    this._saveUsers();
   }
 
   updateUserProfile(name, password, email, height) {
     this.validateCurrentUser();
     this.currentUser.updateProfile(name, password, email, height);
+    this._saveUsers();
   }
 
   getCurrentUser() {

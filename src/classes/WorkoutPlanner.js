@@ -3,16 +3,22 @@ import { ExerciseService } from "./services/ExerciseService.js";
 import { WorkoutPlanService } from "./services/WorkoutPlanService.js";
 import { WorkoutService } from "./services/WorkoutService.js";
 import { StatisticsService } from "./services/StatisticsService.js";
+import { LocalStorageManager } from "./services/LocalStorageManager.js";
 import { ExerciseType } from "./Exercise/Constants/ExerciseType.js";
 
 export class WorkoutPlanner {
   constructor() {
-    this.userService = new UserService();
-    this.exerciseService = new ExerciseService();
-    this.workoutPlanService = new WorkoutPlanService(this.exerciseService);
+    // Инициализируем менеджер хранилища
+    this.storageManager = new LocalStorageManager();
+    
+    // Инициализируем сервисы с использованием LocalStorageManager
+    this.userService = new UserService(this.storageManager);
+    this.exerciseService = new ExerciseService(this.storageManager);
+    this.workoutPlanService = new WorkoutPlanService(this.exerciseService, this.storageManager);
     this.workoutService = new WorkoutService(
       this.exerciseService,
-      this.workoutPlanService
+      this.workoutPlanService,
+      this.storageManager
     );
     this.statisticsService = new StatisticsService(
       this.userService,
