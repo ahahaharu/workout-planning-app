@@ -5,14 +5,12 @@ export class UserService {
     this.storageManager = storageManager;
     this.users = this.storageManager.getUsers() || [];
     this.currentUser = null;
-    
-    // Десериализация объектов User из localStorage
+
     this._deserializeUsers();
   }
 
   _deserializeUsers() {
-    // Преобразуем простые объекты из localStorage в экземпляры класса User
-    this.users = this.users.map(userData => {
+    this.users = this.users.map((userData) => {
       const user = new User(
         userData.id,
         userData.name,
@@ -21,15 +19,14 @@ export class UserService {
         userData.currentWeight,
         userData.height
       );
-      
-      // Восстанавливаем историю веса
+
       if (userData.weightHistory && userData.weightHistory.length) {
-        user.weightHistory = userData.weightHistory.map(entry => ({
+        user.weightHistory = userData.weightHistory.map((entry) => ({
           date: new Date(entry.date),
-          weight: entry.weight
+          weight: entry.weight,
         }));
       }
-      
+
       return user;
     });
   }
@@ -48,7 +45,7 @@ export class UserService {
 
   generateUserId() {
     if (!this.users.length) return 1;
-    return Math.max(...this.users.map(user => user.id)) + 1;
+    return Math.max(...this.users.map((user) => user.id)) + 1;
   }
 
   registerUser(name, password, email, currentWeight, height) {

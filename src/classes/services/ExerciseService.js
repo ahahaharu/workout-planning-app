@@ -12,12 +12,10 @@ export class ExerciseService {
     this.storageManager = storageManager;
     this.exercises = this.storageManager.getExercises() || [];
 
-    // Десериализация объектов Exercise из localStorage
     this._deserializeExercises();
   }
 
   _deserializeExercises() {
-    // Преобразуем простые объекты из localStorage в экземпляры соответствующих классов
     this.exercises = this.exercises.map((exerciseData) => {
       let exercise;
 
@@ -33,7 +31,6 @@ export class ExerciseService {
           []
         );
 
-        // Добавляем сеты
         if (exerciseData.sets && exerciseData.sets.length) {
           exerciseData.sets.forEach((set) => {
             exercise.addSet(set.reps, set.weight);
@@ -50,7 +47,6 @@ export class ExerciseService {
           exerciseData.cardioType
         );
 
-        // Добавляем кардио сессии
         if (exerciseData.sessions && exerciseData.sessions.length) {
           exerciseData.sessions.forEach((session) => {
             exercise.addSession(
@@ -71,7 +67,6 @@ export class ExerciseService {
           exerciseData.targetMuscle
         );
 
-        // Добавляем сессии на выносливость
         if (exerciseData.sessions && exerciseData.sessions.length) {
           exerciseData.sessions.forEach((session) => {
             exercise.addSession(session.duration, session.difficulty);
@@ -79,7 +74,6 @@ export class ExerciseService {
         }
       }
 
-      // Восстанавливаем заметки
       if (exerciseData.notes && exerciseData.notes.length) {
         exerciseData.notes.forEach((note) => {
           exercise.addNote(note);
@@ -182,11 +176,9 @@ export class ExerciseService {
     const workout = this.getWorkoutById(workoutId);
     if (!workout) return;
 
-    // Находим упражнение в тренировке
     const exercise = workout.exercises.find((ex) => ex.id === exerciseId);
     if (!exercise) return;
 
-    // Очищаем подходы
     if (exercise.sets) exercise.sets = [];
     if (exercise.completedSets) exercise.completedSets = [];
 
@@ -200,7 +192,6 @@ export class ExerciseService {
     const exercise = workout.exercises.find((ex) => ex.id === exerciseId);
     if (!exercise) return;
 
-    // Очищаем кардио сессии
     if (exercise.sessions) exercise.sessions = [];
     if (exercise.completedSessions) exercise.completedSessions = [];
 
@@ -208,7 +199,6 @@ export class ExerciseService {
   }
 
   clearExerciseEnduranceSessions(workoutId, exerciseId) {
-    // Такой же как clearExerciseCardioSessions
     this.clearExerciseCardioSessions(workoutId, exerciseId);
   }
 

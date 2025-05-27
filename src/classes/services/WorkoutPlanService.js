@@ -9,12 +9,10 @@ export class WorkoutPlanService {
     this.workoutPlans = this.storageManager.getWorkoutPlans() || [];
     this.strategyFactory = new ExerciseStrategyFactory();
 
-    // Десериализация объектов WorkoutPlan из localStorage
     this._deserializeWorkoutPlans();
   }
 
   _deserializeWorkoutPlans() {
-    // Преобразуем простые объекты из localStorage в экземпляры класса WorkoutPlan
     this.workoutPlans = this.workoutPlans.map((planData) => {
       const workoutPlan = new WorkoutPlan(
         planData.id,
@@ -23,25 +21,20 @@ export class WorkoutPlanService {
         planData.description
       );
 
-      // Восстанавливаем заметки
       if (planData.notes && planData.notes.length) {
         planData.notes.forEach((note) => {
           workoutPlan.addNote(note);
         });
       }
 
-      // Восстанавливаем упражнения
       if (planData.exercises && planData.exercises.length) {
         planData.exercises.forEach((exerciseData) => {
-          // Получаем исходное упражнение из сервиса упражнений
           const originalExercise = this.exerciseService.getExerciseById(
             exerciseData.id
           );
           if (originalExercise) {
-            // Добавляем упражнение в план
             const planExercise = workoutPlan.addExercise(originalExercise);
 
-            // Добавляем данные отслеживания в зависимости от типа упражнения
             if (
               exerciseData.type === ExerciseType.STRENGTH &&
               exerciseData.sets
@@ -304,7 +297,6 @@ export class WorkoutPlanService {
     return this.workoutPlans;
   }
 
-  // Метод для добавления кардио сессии к упражнению в плане
   addCardioSessionToExerciseInWorkoutPlan(
     planId,
     exerciseId,
@@ -335,7 +327,6 @@ export class WorkoutPlanService {
     return plan;
   }
 
-  // Метод для добавления сессии упражнения на выносливость в плане
   addEnduranceSessionToExerciseInWorkoutPlan(
     planId,
     exerciseId,

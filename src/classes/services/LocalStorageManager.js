@@ -39,7 +39,6 @@ export class LocalStorageManager {
     }
 
     try {
-      // Получаем данные из localStorage напрямую
       const users = JSON.parse(
         localStorage.getItem("workout-app-users") || "[]"
       );
@@ -59,18 +58,15 @@ export class LocalStorageManager {
       console.log(`- Тренировок: ${workouts.length}`);
       console.log(`- Планов тренировок: ${workoutPlans.length}`);
 
-      // Принудительно устанавливаем данные в хранилище библиотеки
       planner.storageManager.saveUsers(users);
       planner.storageManager.saveExercises(exercises);
       planner.storageManager.saveWorkouts(workouts);
       planner.storageManager.saveWorkoutPlans(workoutPlans);
 
-      // Переинициализируем сервисы
       planner.exerciseService._deserializeExercises();
       planner.workoutService._deserializeWorkouts();
       planner.workoutPlanService._deserializeWorkoutPlans();
 
-      // Проверяем после переинициализации
       const exercisesAfter = planner.exerciseService.getAllExercises();
       const workoutsAfter = planner.workoutService.getAllWorkouts();
 
@@ -96,7 +92,6 @@ export class LocalStorageManager {
     }
   }
 
-  // Методы для работы с пользователями
   getUsers() {
     return this.userStorage.getData() || [];
   }
@@ -105,7 +100,6 @@ export class LocalStorageManager {
     this.userStorage.saveData(users);
   }
 
-  // Методы для работы с упражнениями
   getExercises() {
     return this.exerciseStorage.getData() || [];
   }
@@ -114,7 +108,6 @@ export class LocalStorageManager {
     this.exerciseStorage.saveData(exercises);
   }
 
-  // Методы для работы с планами тренировок
   getWorkoutPlans() {
     return this.workoutPlanStorage.getData() || [];
   }
@@ -123,7 +116,6 @@ export class LocalStorageManager {
     this.workoutPlanStorage.saveData(plans);
   }
 
-  // Методы для работы с тренировками
   getWorkouts() {
     return this.workoutStorage.getData() || [];
   }
@@ -132,7 +124,6 @@ export class LocalStorageManager {
     this.workoutStorage.saveData(workouts);
   }
 
-  // Очистка данных
   clearAllData() {
     this.userStorage.clearData();
     this.exerciseStorage.clearData();

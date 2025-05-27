@@ -295,7 +295,6 @@ export class WorkoutService {
     return result;
   }
 
-  // Метод для получения упражнения из тренировки
   getExerciseInWorkout(workoutId, exerciseId) {
     const workout = this.getWorkoutById(workoutId);
     if (!workout) {
@@ -312,7 +311,6 @@ export class WorkoutService {
     return exercise;
   }
 
-  // Метод для очистки подходов силового упражнения
   clearExerciseSets(workoutId, exerciseId) {
     const workout = this.getWorkoutById(workoutId);
     if (!workout) return;
@@ -327,7 +325,6 @@ export class WorkoutService {
     this._saveWorkouts();
   }
 
-  // Метод для очистки сессий кардио упражнений
   clearExerciseCardioSessions(workoutId, exerciseId) {
     const workout = this.getWorkoutById(workoutId);
     if (!workout) return;
@@ -342,9 +339,7 @@ export class WorkoutService {
     this._saveWorkouts();
   }
 
-  // Метод для очистки сессий упражнений на выносливость
   clearExerciseEnduranceSessions(workoutId, exerciseId) {
-    // Используем тот же метод, что и для кардио
     this.clearExerciseCardioSessions(workoutId, exerciseId);
   }
 }

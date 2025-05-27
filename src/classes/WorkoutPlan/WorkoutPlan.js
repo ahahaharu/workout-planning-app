@@ -13,7 +13,6 @@ export class WorkoutPlan {
     this.exercises = [];
     this.notes = [];
 
-    // Создаем фабрику стратегий
     this.strategyFactory = new ExerciseStrategyFactory();
   }
 
@@ -48,7 +47,6 @@ export class WorkoutPlan {
     return exercise;
   }
 
-  // Методы-обёртки для обратной совместимости
   addSetToExercise(exerciseId, reps, weight) {
     return this.addTrackingData(exerciseId, { reps, weight });
   }
@@ -75,7 +73,6 @@ export class WorkoutPlan {
     strategy.updateTrackingData(exercise, index, data);
   }
 
-  // Методы-обёртки для обратной совместимости
   updateSetInExercise(exerciseId, setIndex, reps, weight) {
     return this.updateTrackingData(exerciseId, setIndex, { reps, weight });
   }
