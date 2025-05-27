@@ -7,21 +7,17 @@ export class WorkoutService {
     this.storageManager = storageManager;
     this.workouts = this.storageManager.getWorkouts() || [];
 
-    // Десериализация объектов Workout из localStorage
     this._deserializeWorkouts();
   }
 
   _deserializeWorkouts() {
-    // Преобразуем простые объекты из localStorage в экземпляры класса Workout
     this.workouts = this.workouts.map((workoutData) => {
       let plan = null;
 
-      // Если у тренировки есть связанный план, находим его
       if (workoutData.plan && workoutData.plan.id !== undefined) {
         plan = this.workoutPlanService.getWorkoutPlanById(workoutData.plan.id);
       }
 
-      // Создаем объект тренировки
       const workout = new Workout(
         workoutData.id,
         workoutData.ownerId,
@@ -29,20 +25,15 @@ export class WorkoutService {
         plan
       );
 
-      // Если в данных есть упражнения, но нет плана (или упражнения добавлены вручную)
       if (workoutData.exercises && workoutData.exercises.length) {
         workoutData.exercises.forEach((exerciseData) => {
-          // Если упражнение еще не добавлено из плана
           if (!workout.getExerciseById(exerciseData.id)) {
-            // Находим оригинальное упражнение из сервиса упражнений
             const originalExercise = this.exerciseService.getExerciseById(
               exerciseData.id
             );
             if (originalExercise) {
-              // Добавляем упражнение в тренировку
               const workoutExercise = workout.addExercise(originalExercise);
 
-              // Копируем данные тренировки в зависимости от типа упражнения
               if (exerciseData.sets && exerciseData.sets.length) {
                 exerciseData.sets.forEach((set) => {
                   workout.recordSet(exerciseData.id, set.reps, set.weight);

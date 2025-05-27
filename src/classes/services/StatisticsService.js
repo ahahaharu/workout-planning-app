@@ -121,6 +121,7 @@ export class StatisticsService {
       const progressData = exercises.map((item) => {
         return {
           date: item.date,
+          exerciseId: item.exercise.id,
           ...strategy.getStatistics(item.exercise),
         };
       });
@@ -130,8 +131,37 @@ export class StatisticsService {
         exercises[exercises.length - 1].exercise
       );
 
+      const exerciseType = firstExercise.type.toUpperCase();
+      let additionalMetrics = {};
+
+      if (exerciseType === "ENDURANCE" || exerciseType === "ENDURANCE") {
+        if (
+          !progressMetrics.intensityProgress &&
+          progressMetrics.totalIntensityProgress
+        ) {
+          additionalMetrics.intensityProgress =
+            progressMetrics.totalIntensityProgress;
+        }
+      } else if (exerciseType === "CARDIO" || exerciseType === "CARDIO") {
+        if (
+          !progressMetrics.distanceProgress &&
+          progressMetrics.totalDistanceProgress
+        ) {
+          additionalMetrics.distanceProgress =
+            progressMetrics.totalDistanceProgress;
+        }
+        if (
+          !progressMetrics.durationProgress &&
+          progressMetrics.totalDurationProgress
+        ) {
+          additionalMetrics.durationProgress =
+            progressMetrics.totalDurationProgress;
+        }
+      }
+
       return {
         ...progressMetrics,
+        ...additionalMetrics,
         progress: progressData,
       };
     } catch (error) {

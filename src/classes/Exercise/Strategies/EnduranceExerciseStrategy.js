@@ -45,26 +45,48 @@ export class EnduranceExerciseStrategy extends ExerciseStrategy {
   }
 
   getStatistics(exercise) {
+    const sessions = exercise.sessions || [];
+    const totalDuration = sessions.reduce(
+      (sum, session) => sum + (Number(session.duration) || 0),
+      0
+    );
+    const averageDifficulty =
+      sessions.length > 0
+        ? sessions.reduce(
+            (sum, session) => sum + (Number(session.difficulty) || 0),
+            0
+          ) / sessions.length
+        : 0;
+
+    const maxDuration =
+      sessions.length > 0
+        ? Math.max(...sessions.map((session) => Number(session.duration) || 0))
+        : 0;
+
     return {
-      totalDuration: exercise.getTotalDuration(),
-      maxDuration: exercise.getMaxDuration(),
-      averageDifficulty: exercise.getAverageDifficulty(),
-      totalIntensity: exercise.getTotalIntensity(),
-      averageIntensity: exercise.getAverageIntensity(),
+      totalDuration,
+      duration: totalDuration,
+      maxDuration,
+      averageDifficulty,
+      totalIntensity: averageDifficulty,
+      difficulty: averageDifficulty,
+      sessionsCount: sessions.length,
     };
   }
 
   calculateProgress(firstExercise, lastExercise) {
+    const firstStats = this.getStatistics(firstExercise);
+    const lastStats = this.getStatistics(lastExercise);
+
     return {
-      totalDurationProgress:
-        lastExercise.getTotalDuration() - firstExercise.getTotalDuration(),
-      maxDurationProgress:
-        lastExercise.getMaxDuration() - firstExercise.getMaxDuration(),
+      durationProgress: lastStats.totalDuration - firstStats.totalDuration,
+      intensityProgress: lastStats.totalIntensity - firstStats.totalIntensity,
+      totalDurationProgress: lastStats.totalDuration - firstStats.totalDuration,
+      maxDurationProgress: lastStats.maxDuration - firstStats.maxDuration,
       averageDifficultyProgress:
-        lastExercise.getAverageDifficulty() -
-        firstExercise.getAverageDifficulty(),
+        lastStats.averageDifficulty - firstStats.averageDifficulty,
       totalIntensityProgress:
-        lastExercise.getTotalIntensity() - firstExercise.getTotalIntensity(),
+        lastStats.totalIntensity - firstStats.totalIntensity,
     };
   }
 

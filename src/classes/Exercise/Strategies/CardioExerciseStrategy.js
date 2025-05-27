@@ -54,29 +54,71 @@ export class CardioExerciseStrategy extends ExerciseStrategy {
   }
 
   getStatistics(exercise) {
+    const sessions = exercise.sessions || [];
+    const totalDistance = sessions.reduce(
+      (sum, session) => sum + (Number(session.distance) || 0),
+      0
+    );
+    const totalDuration = sessions.reduce(
+      (sum, session) => sum + (Number(session.duration) || 0),
+      0
+    );
+    const totalCalories = sessions.reduce(
+      (sum, session) => sum + (Number(session.caloriesBurned) || 0),
+      0
+    );
+
+    let bestPace = 0;
+    let averagePace = 0;
+    let bestSpeed = 0;
+    let averageSpeed = 0;
+
+    if (sessions.length > 0 && totalDistance > 0) {
+      const paces = sessions
+        .filter((s) => (Number(s.distance) || 0) > 0)
+        .map((s) => (Number(s.duration) || 0) / (Number(s.distance) || 1));
+
+      bestPace = Math.min(...paces);
+      averagePace = totalDuration / totalDistance;
+
+      const speeds = sessions
+        .filter((s) => (Number(s.duration) || 0) > 0)
+        .map(
+          (s) => ((Number(s.distance) || 0) / (Number(s.duration) || 1)) * 60
+        );
+
+      bestSpeed = Math.max(...speeds);
+      averageSpeed = totalDistance / (totalDuration / 60);
+    }
+
     return {
-      totalDistance: exercise.getTotalDistance(),
-      totalDuration: exercise.getTotalDuration(),
-      bestPace: exercise.getBestPace(),
-      averagePace: exercise.getAveragePace(),
-      bestSpeed: exercise.getBestSpeed(),
-      averageSpeed: exercise.getAverageSpeed(),
-      totalCalories: exercise.getTotalCalories(),
+      totalDistance,
+      distance: totalDistance,
+      totalDuration,
+      duration: totalDuration,
+      bestPace,
+      averagePace,
+      bestSpeed,
+      averageSpeed,
+      totalCalories,
+      caloriesBurned: totalCalories,
     };
   }
 
   calculateProgress(firstExercise, lastExercise) {
+    const firstStats = this.getStatistics(firstExercise);
+    const lastStats = this.getStatistics(lastExercise);
+
     return {
-      totalDistanceProgress:
-        lastExercise.getTotalDistance() - firstExercise.getTotalDistance(),
-      totalDurationProgress:
-        lastExercise.getTotalDuration() - firstExercise.getTotalDuration(),
-      bestPaceProgress:
-        lastExercise.getBestPace() - firstExercise.getBestPace(),
-      bestSpeedProgress:
-        lastExercise.getBestSpeed() - firstExercise.getBestSpeed(),
-      totalCaloriesProgress:
-        lastExercise.getTotalCalories() - firstExercise.getTotalCalories(),
+      distanceProgress: lastStats.totalDistance - firstStats.totalDistance,
+      durationProgress: lastStats.totalDuration - firstStats.totalDuration,
+      caloriesProgress: lastStats.totalCalories - firstStats.totalCalories,
+
+      totalDistanceProgress: lastStats.totalDistance - firstStats.totalDistance,
+      totalDurationProgress: lastStats.totalDuration - firstStats.totalDuration,
+      bestPaceProgress: lastStats.bestPace - firstStats.bestPace,
+      bestSpeedProgress: lastStats.bestSpeed - firstStats.bestSpeed,
+      totalCaloriesProgress: lastStats.totalCalories - firstStats.totalCalories,
     };
   }
 
