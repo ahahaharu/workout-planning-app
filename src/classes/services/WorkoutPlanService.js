@@ -3,15 +3,88 @@ import { WorkoutPlan } from "../WorkoutPlan/WorkoutPlan.js";
 import { ExerciseStrategyFactory } from "../Exercise/Strategies/ExerciseStrategyFactory.js";
 
 export class WorkoutPlanService {
-  constructor(exerciseService) {
-    this.workoutPlans = [];
+  constructor(exerciseService, storageManager) {
     this.exerciseService = exerciseService;
+    this.storageManager = storageManager;
+    this.workoutPlans = this.storageManager.getWorkoutPlans() || [];
     this.strategyFactory = new ExerciseStrategyFactory();
+
+    this._deserializeWorkoutPlans();
+  }
+
+  _deserializeWorkoutPlans() {
+    this.workoutPlans = this.workoutPlans.map((planData) => {
+      const workoutPlan = new WorkoutPlan(
+        planData.id,
+        planData.ownerId,
+        planData.name,
+        planData.description
+      );
+
+      if (planData.notes && planData.notes.length) {
+        planData.notes.forEach((note) => {
+          workoutPlan.addNote(note);
+        });
+      }
+
+      if (planData.exercises && planData.exercises.length) {
+        planData.exercises.forEach((exerciseData) => {
+          const originalExercise = this.exerciseService.getExerciseById(
+            exerciseData.id
+          );
+          if (originalExercise) {
+            const planExercise = workoutPlan.addExercise(originalExercise);
+
+            if (
+              exerciseData.type === ExerciseType.STRENGTH &&
+              exerciseData.sets
+            ) {
+              exerciseData.sets.forEach((set) => {
+                workoutPlan.addSetToExercise(
+                  exerciseData.id,
+                  set.reps,
+                  set.weight
+                );
+              });
+            } else if (
+              exerciseData.type === ExerciseType.CARDIO &&
+              exerciseData.sessions
+            ) {
+              exerciseData.sessions.forEach((session) => {
+                workoutPlan.addSessionToExercise(
+                  exerciseData.id,
+                  session.duration,
+                  session.distance,
+                  session.caloriesBurned
+                );
+              });
+            } else if (
+              exerciseData.type === ExerciseType.ENDURANCE &&
+              exerciseData.sessions
+            ) {
+              exerciseData.sessions.forEach((session) => {
+                workoutPlan.addEnduranceSessionToExercise(
+                  exerciseData.id,
+                  session.duration,
+                  session.difficulty
+                );
+              });
+            }
+          }
+        });
+      }
+
+      return workoutPlan;
+    });
+  }
+
+  _saveWorkoutPlans() {
+    this.storageManager.saveWorkoutPlans(this.workoutPlans);
   }
 
   generateWorkoutPlanId() {
     if (!this.workoutPlans.length) return 0;
-    return this.workoutPlans.at(-1).id + 1;
+    return Math.max(...this.workoutPlans.map((plan) => plan.id)) + 1;
   }
 
   createWorkoutPlan(ownerId, name, description) {
@@ -19,6 +92,7 @@ export class WorkoutPlanService {
     const workoutPlan = new WorkoutPlan(id, ownerId, name, description);
 
     this.workoutPlans.push(workoutPlan);
+    this._saveWorkoutPlans();
     return workoutPlan;
   }
 
@@ -26,6 +100,7 @@ export class WorkoutPlanService {
     this.workoutPlans = this.workoutPlans.filter(
       (workoutPlan) => workoutPlan.id !== workoutPlanId
     );
+    this._saveWorkoutPlans();
   }
 
   addExerciseToWorkoutPlan(workoutPlanId, exerciseId) {
@@ -41,6 +116,7 @@ export class WorkoutPlanService {
     }
 
     workoutPlan.addExercise(exercise);
+    this._saveWorkoutPlans();
     return workoutPlan;
   }
 
@@ -52,6 +128,7 @@ export class WorkoutPlanService {
     }
 
     workoutPlan.removeExercise(exerciseId);
+    this._saveWorkoutPlans();
     return workoutPlan;
   }
 
@@ -73,6 +150,7 @@ export class WorkoutPlanService {
     try {
       const strategy = this.strategyFactory.getStrategy(exercise.type);
       strategy.addTrackingData(exercise, data);
+      this._saveWorkoutPlans();
       return exercise;
     } catch (error) {
       throw new Error(`Ошибка добавления данных: ${error.message}`);
@@ -130,6 +208,7 @@ export class WorkoutPlanService {
     try {
       const strategy = this.strategyFactory.getStrategy(exercise.type);
       strategy.updateTrackingData(exercise, index, data);
+      this._saveWorkoutPlans();
       return exercise;
     } catch (error) {
       throw new Error(`Ошибка обновления данных: ${error.message}`);
@@ -183,7 +262,9 @@ export class WorkoutPlanService {
       throw new Error(`План тренировки с ID ${workoutPlanId} не найден`);
     }
 
-    return workoutPlan.removeTrackingData(exerciseId, index);
+    workoutPlan.removeTrackingData(exerciseId, index);
+    this._saveWorkoutPlans();
+    return workoutPlan;
   }
 
   removeSetFromExercise(workoutPlanId, exerciseId, setIndex) {
@@ -214,5 +295,63 @@ export class WorkoutPlanService {
 
   getAllWorkoutPlans() {
     return this.workoutPlans;
+  }
+
+  addCardioSessionToExerciseInWorkoutPlan(
+    planId,
+    exerciseId,
+    duration,
+    distance,
+    caloriesBurned
+  ) {
+    const plan = this.getWorkoutPlanById(planId);
+    if (!plan) throw new Error(`План ${planId} не найден`);
+
+    const exerciseIndex = plan.exercises.findIndex(
+      (ex) => ex.id === exerciseId
+    );
+    if (exerciseIndex === -1)
+      throw new Error(`Упражнение ${exerciseId} не найдено в плане ${planId}`);
+
+    if (!plan.exercises[exerciseIndex].sessions) {
+      plan.exercises[exerciseIndex].sessions = [];
+    }
+
+    plan.exercises[exerciseIndex].sessions.push({
+      duration,
+      distance,
+      caloriesBurned,
+    });
+
+    this._savePlans();
+    return plan;
+  }
+
+  addEnduranceSessionToExerciseInWorkoutPlan(
+    planId,
+    exerciseId,
+    duration,
+    difficulty
+  ) {
+    const plan = this.getWorkoutPlanById(planId);
+    if (!plan) throw new Error(`План ${planId} не найден`);
+
+    const exerciseIndex = plan.exercises.findIndex(
+      (ex) => ex.id === exerciseId
+    );
+    if (exerciseIndex === -1)
+      throw new Error(`Упражнение ${exerciseId} не найдено в плане ${planId}`);
+
+    if (!plan.exercises[exerciseIndex].sessions) {
+      plan.exercises[exerciseIndex].sessions = [];
+    }
+
+    plan.exercises[exerciseIndex].sessions.push({
+      duration,
+      difficulty,
+    });
+
+    this._savePlans();
+    return plan;
   }
 }

@@ -1,12 +1,27 @@
 {
-  "name": "traning-planning-app",
-  "version": "1.0.0",
-  "description": "![Курсовая](https://github.com/user-attachments/assets/b971ba93-868f-4d46-966e-98f901c2f1fa)",
-  "main": "index.js",
+  "name": "workout-planning-lib",
+  "version": "1.0.5",
+  "description": "Библиотека для планирования тренировок",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rollup -c",
+    "dev": "rollup -c -w"
   },
   "type": "module",
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^24.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.0",
+    "@rollup/plugin-terser": "^0.4.0",
+    "rollup": "^3.15.0",
+    "rollup-plugin-peer-deps-external": "^2.2.4"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  }
 }
