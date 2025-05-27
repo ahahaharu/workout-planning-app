@@ -8,45 +8,56 @@ export class WorkoutPlanService {
     this.storageManager = storageManager;
     this.workoutPlans = this.storageManager.getWorkoutPlans() || [];
     this.strategyFactory = new ExerciseStrategyFactory();
-    
+
     // Десериализация объектов WorkoutPlan из localStorage
     this._deserializeWorkoutPlans();
   }
 
   _deserializeWorkoutPlans() {
     // Преобразуем простые объекты из localStorage в экземпляры класса WorkoutPlan
-    this.workoutPlans = this.workoutPlans.map(planData => {
+    this.workoutPlans = this.workoutPlans.map((planData) => {
       const workoutPlan = new WorkoutPlan(
         planData.id,
         planData.ownerId,
         planData.name,
         planData.description
       );
-      
+
       // Восстанавливаем заметки
       if (planData.notes && planData.notes.length) {
-        planData.notes.forEach(note => {
+        planData.notes.forEach((note) => {
           workoutPlan.addNote(note);
         });
       }
-      
+
       // Восстанавливаем упражнения
       if (planData.exercises && planData.exercises.length) {
-        planData.exercises.forEach(exerciseData => {
+        planData.exercises.forEach((exerciseData) => {
           // Получаем исходное упражнение из сервиса упражнений
-          const originalExercise = this.exerciseService.getExerciseById(exerciseData.id);
+          const originalExercise = this.exerciseService.getExerciseById(
+            exerciseData.id
+          );
           if (originalExercise) {
             // Добавляем упражнение в план
             const planExercise = workoutPlan.addExercise(originalExercise);
-            
+
             // Добавляем данные отслеживания в зависимости от типа упражнения
-            if (exerciseData.type === ExerciseType.STRENGTH && exerciseData.sets) {
-              exerciseData.sets.forEach(set => {
-                workoutPlan.addSetToExercise(exerciseData.id, set.reps, set.weight);
+            if (
+              exerciseData.type === ExerciseType.STRENGTH &&
+              exerciseData.sets
+            ) {
+              exerciseData.sets.forEach((set) => {
+                workoutPlan.addSetToExercise(
+                  exerciseData.id,
+                  set.reps,
+                  set.weight
+                );
               });
-            } 
-            else if (exerciseData.type === ExerciseType.CARDIO && exerciseData.sessions) {
-              exerciseData.sessions.forEach(session => {
+            } else if (
+              exerciseData.type === ExerciseType.CARDIO &&
+              exerciseData.sessions
+            ) {
+              exerciseData.sessions.forEach((session) => {
                 workoutPlan.addSessionToExercise(
                   exerciseData.id,
                   session.duration,
@@ -54,9 +65,11 @@ export class WorkoutPlanService {
                   session.caloriesBurned
                 );
               });
-            }
-            else if (exerciseData.type === ExerciseType.ENDURANCE && exerciseData.sessions) {
-              exerciseData.sessions.forEach(session => {
+            } else if (
+              exerciseData.type === ExerciseType.ENDURANCE &&
+              exerciseData.sessions
+            ) {
+              exerciseData.sessions.forEach((session) => {
                 workoutPlan.addEnduranceSessionToExercise(
                   exerciseData.id,
                   session.duration,
@@ -67,7 +80,7 @@ export class WorkoutPlanService {
           }
         });
       }
-      
+
       return workoutPlan;
     });
   }
@@ -78,7 +91,7 @@ export class WorkoutPlanService {
 
   generateWorkoutPlanId() {
     if (!this.workoutPlans.length) return 0;
-    return Math.max(...this.workoutPlans.map(plan => plan.id)) + 1;
+    return Math.max(...this.workoutPlans.map((plan) => plan.id)) + 1;
   }
 
   createWorkoutPlan(ownerId, name, description) {
@@ -289,5 +302,65 @@ export class WorkoutPlanService {
 
   getAllWorkoutPlans() {
     return this.workoutPlans;
+  }
+
+  // Метод для добавления кардио сессии к упражнению в плане
+  addCardioSessionToExerciseInWorkoutPlan(
+    planId,
+    exerciseId,
+    duration,
+    distance,
+    caloriesBurned
+  ) {
+    const plan = this.getWorkoutPlanById(planId);
+    if (!plan) throw new Error(`План ${planId} не найден`);
+
+    const exerciseIndex = plan.exercises.findIndex(
+      (ex) => ex.id === exerciseId
+    );
+    if (exerciseIndex === -1)
+      throw new Error(`Упражнение ${exerciseId} не найдено в плане ${planId}`);
+
+    if (!plan.exercises[exerciseIndex].sessions) {
+      plan.exercises[exerciseIndex].sessions = [];
+    }
+
+    plan.exercises[exerciseIndex].sessions.push({
+      duration,
+      distance,
+      caloriesBurned,
+    });
+
+    this._savePlans();
+    return plan;
+  }
+
+  // Метод для добавления сессии упражнения на выносливость в плане
+  addEnduranceSessionToExerciseInWorkoutPlan(
+    planId,
+    exerciseId,
+    duration,
+    difficulty
+  ) {
+    const plan = this.getWorkoutPlanById(planId);
+    if (!plan) throw new Error(`План ${planId} не найден`);
+
+    const exerciseIndex = plan.exercises.findIndex(
+      (ex) => ex.id === exerciseId
+    );
+    if (exerciseIndex === -1)
+      throw new Error(`Упражнение ${exerciseId} не найдено в плане ${planId}`);
+
+    if (!plan.exercises[exerciseIndex].sessions) {
+      plan.exercises[exerciseIndex].sessions = [];
+    }
+
+    plan.exercises[exerciseIndex].sessions.push({
+      duration,
+      difficulty,
+    });
+
+    this._savePlans();
+    return plan;
   }
 }

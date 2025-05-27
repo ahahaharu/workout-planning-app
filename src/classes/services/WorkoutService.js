@@ -6,21 +6,21 @@ export class WorkoutService {
     this.workoutPlanService = workoutPlanService;
     this.storageManager = storageManager;
     this.workouts = this.storageManager.getWorkouts() || [];
-    
+
     // Десериализация объектов Workout из localStorage
     this._deserializeWorkouts();
   }
 
   _deserializeWorkouts() {
     // Преобразуем простые объекты из localStorage в экземпляры класса Workout
-    this.workouts = this.workouts.map(workoutData => {
+    this.workouts = this.workouts.map((workoutData) => {
       let plan = null;
-      
+
       // Если у тренировки есть связанный план, находим его
       if (workoutData.plan && workoutData.plan.id !== undefined) {
         plan = this.workoutPlanService.getWorkoutPlanById(workoutData.plan.id);
       }
-      
+
       // Создаем объект тренировки
       const workout = new Workout(
         workoutData.id,
@@ -28,27 +28,31 @@ export class WorkoutService {
         new Date(workoutData.date),
         plan
       );
-      
+
       // Если в данных есть упражнения, но нет плана (или упражнения добавлены вручную)
       if (workoutData.exercises && workoutData.exercises.length) {
-        workoutData.exercises.forEach(exerciseData => {
+        workoutData.exercises.forEach((exerciseData) => {
           // Если упражнение еще не добавлено из плана
           if (!workout.getExerciseById(exerciseData.id)) {
             // Находим оригинальное упражнение из сервиса упражнений
-            const originalExercise = this.exerciseService.getExerciseById(exerciseData.id);
+            const originalExercise = this.exerciseService.getExerciseById(
+              exerciseData.id
+            );
             if (originalExercise) {
               // Добавляем упражнение в тренировку
               const workoutExercise = workout.addExercise(originalExercise);
-              
+
               // Копируем данные тренировки в зависимости от типа упражнения
               if (exerciseData.sets && exerciseData.sets.length) {
-                exerciseData.sets.forEach(set => {
+                exerciseData.sets.forEach((set) => {
                   workout.recordSet(exerciseData.id, set.reps, set.weight);
                 });
-              } 
-              else if (exerciseData.sessions && exerciseData.sessions.length) {
+              } else if (
+                exerciseData.sessions &&
+                exerciseData.sessions.length
+              ) {
                 if (exerciseData.type === "Cardio") {
-                  exerciseData.sessions.forEach(session => {
+                  exerciseData.sessions.forEach((session) => {
                     workout.recordCardioSession(
                       exerciseData.id,
                       session.duration,
@@ -56,9 +60,8 @@ export class WorkoutService {
                       session.caloriesBurned
                     );
                   });
-                } 
-                else if (exerciseData.type === "Endurance") {
-                  exerciseData.sessions.forEach(session => {
+                } else if (exerciseData.type === "Endurance") {
+                  exerciseData.sessions.forEach((session) => {
                     workout.recordEnduranceSession(
                       exerciseData.id,
                       session.duration,
@@ -71,7 +74,7 @@ export class WorkoutService {
           }
         });
       }
-      
+
       return workout;
     });
   }
@@ -82,7 +85,7 @@ export class WorkoutService {
 
   generateWorkoutId() {
     if (!this.workouts.length) return 0;
-    return Math.max(...this.workouts.map(workout => workout.id)) + 1;
+    return Math.max(...this.workouts.map((workout) => workout.id)) + 1;
   }
 
   createWorkout(ownerId, date = null, workoutPlanId) {
@@ -290,5 +293,58 @@ export class WorkoutService {
     const result = workout.updatePlanSets();
     this._saveWorkouts();
     return result;
+  }
+
+  // Метод для получения упражнения из тренировки
+  getExerciseInWorkout(workoutId, exerciseId) {
+    const workout = this.getWorkoutById(workoutId);
+    if (!workout) {
+      throw new Error(`Тренировка с ID ${workoutId} не найдена`);
+    }
+
+    const exercise = workout.exercises.find((ex) => ex.id === exerciseId);
+    if (!exercise) {
+      throw new Error(
+        `Упражнение с ID ${exerciseId} не найдено в тренировке ${workoutId}`
+      );
+    }
+
+    return exercise;
+  }
+
+  // Метод для очистки подходов силового упражнения
+  clearExerciseSets(workoutId, exerciseId) {
+    const workout = this.getWorkoutById(workoutId);
+    if (!workout) return;
+
+    const exercise = workout.exercises.find((ex) => ex.id === exerciseId);
+    if (!exercise) return;
+
+    // Очищаем подходы
+    if (exercise.sets) exercise.sets = [];
+    if (exercise.completedSets) exercise.completedSets = [];
+
+    this._saveWorkouts();
+  }
+
+  // Метод для очистки сессий кардио упражнений
+  clearExerciseCardioSessions(workoutId, exerciseId) {
+    const workout = this.getWorkoutById(workoutId);
+    if (!workout) return;
+
+    const exercise = workout.exercises.find((ex) => ex.id === exerciseId);
+    if (!exercise) return;
+
+    // Очищаем сессии кардио
+    if (exercise.sessions) exercise.sessions = [];
+    if (exercise.completedSessions) exercise.completedSessions = [];
+
+    this._saveWorkouts();
+  }
+
+  // Метод для очистки сессий упражнений на выносливость
+  clearExerciseEnduranceSessions(workoutId, exerciseId) {
+    // Используем тот же метод, что и для кардио
+    this.clearExerciseCardioSessions(workoutId, exerciseId);
   }
 }

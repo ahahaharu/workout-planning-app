@@ -200,6 +200,7 @@ export class ExerciseService {
     const exercise = workout.exercises.find((ex) => ex.id === exerciseId);
     if (!exercise) return;
 
+    // Очищаем кардио сессии
     if (exercise.sessions) exercise.sessions = [];
     if (exercise.completedSessions) exercise.completedSessions = [];
 
@@ -207,6 +208,7 @@ export class ExerciseService {
   }
 
   clearExerciseEnduranceSessions(workoutId, exerciseId) {
+    // Такой же как clearExerciseCardioSessions
     this.clearExerciseCardioSessions(workoutId, exerciseId);
   }
 
