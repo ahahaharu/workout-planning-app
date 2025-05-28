@@ -323,7 +323,7 @@ export class WorkoutPlanService {
       caloriesBurned,
     });
 
-    this._savePlans();
+    this._saveWorkoutPlans(); // ← ИСПРАВЛЕНО: было _savePlans()
     return plan;
   }
 
@@ -351,7 +351,7 @@ export class WorkoutPlanService {
       difficulty,
     });
 
-    this._savePlans();
+    this._saveWorkoutPlans(); // ← ИСПРАВЛЕНО: было _savePlans()
     return plan;
   }
 }
