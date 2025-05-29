@@ -127,7 +127,6 @@ export class WorkoutPlan {
     }
   }
 
-  // Методы-обёртки для обратной совместимости
   removeSetFromExercise(exerciseId, setIndex) {
     return this.removeTrackingData(exerciseId, setIndex);
   }
